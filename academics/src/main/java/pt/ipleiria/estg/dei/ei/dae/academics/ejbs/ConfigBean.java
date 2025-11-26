@@ -1,27 +1,23 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.ejbs;
 
-
 import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import jakarta.ejb.EJB;
 
-@Singleton // this EJB will have only one instance in the application;
-@Startup //this EJB will be automatically instantiated once the application is
-//deployed onto the Wildfly application server.
+@Startup
+@Singleton
 public class ConfigBean {
+
     @EJB
     private StudentBean studentBean;
 
     @PostConstruct
     public void populateDB() {
-        System.out.println("Hello Java EE!");
-        String username = "rafa";
-        String name = "Coelho";
-        String password = "pass";
-        String email = "email";
+        System.out.println("Populating database...");
 
-        studentBean.create(username,name,password,email);
+        studentBean.create("alice.silva", "pass123", "Alice Silva", "alice@email.com");
+
+        System.out.println("Database population completed!");
     }
-
 }
