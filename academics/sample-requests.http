@@ -1,0 +1,64 @@
+### Login - obter token JWT
+POST http://localhost:8080/academics/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Guarda o token na variável @token para usar nos próximos requests
+# Resposta esperada: {"token": "eyJhbGc..."}
+
+###
+
+### GET protegido - com token válido (ADMIN)
+GET http://localhost:8080/academics/api/users
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwicm9sZSI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3NjQ3MTA0NzQsImV4cCI6MTc2NDcxNDA3NH0.rfdeceV6H-8Ss-sdeLslegUUrCu0Q0fRwClLHxhut58sAjariHqAeC12-TD1jlm_
+
+###
+
+### GET protegido - SEM token (deve falhar com 401)
+GET http://localhost:8080/academics/api/users
+
+###
+
+### GET protegido - com token INVÁLIDO (deve falhar com 401)
+GET http://localhost:8080/academics/api/users
+Authorization: Bearer invalid.token.here
+
+###
+
+### GET protegido - com Bearer format errado (deve falhar com 401)
+GET http://localhost:8080/academics/api/users
+Authorization: InvalidToken
+
+###
+
+### GET público - @PermitAll (funciona sem token)
+GET http://localhost:8080/academics/api/public/health
+
+###
+
+### GET negado a todos - @DenyAll (deve falhar com 403)
+GET http://localhost:8080/academics/api/admin/restricted
+
+###
+
+### POST com role específica - USER (deve falhar com 403 se tiver ADMIN)
+POST http://localhost:8080/academics/api/users/create
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiJhZG1pbiIsInVzZXJJZCI6MSwicm9sZSI6IkFETUlOSVNUUkFET1IiLCJpYXQiOjE3NjQ3MTA0NzQsImV4cCI6MTc2NDcxNDA3NH0.rfdeceV6H-8Ss-sdeLslegUUrCu0Q0fRwClLHxhut58sAjariHqAeC12-TD1jlm_
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "role": "USER"
+}
+
+###
+
+### Teste de expiração - token expirado (deve falhar com 401)
+GET http://localhost:8080/academics/api/users
+Authorization: Bearer eyJhbGciOiJIUzM4NCJ9.eyJleHAiOjE2OTg3NjUwMDB9.expired...
+
+###
