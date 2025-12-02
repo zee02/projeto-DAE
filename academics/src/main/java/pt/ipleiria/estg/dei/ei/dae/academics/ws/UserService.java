@@ -7,6 +7,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.annotation.security.RolesAllowed;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 import java.util.List;
 
 @Path("/users")
@@ -18,6 +19,7 @@ public class UserService {
     private UserBean userBean;
 
     @GET
+    @Authenticated
     @RolesAllowed("ADMINISTRADOR")
     public Response getAllUsers() {
         List<User> users = userBean.findAll();
@@ -26,6 +28,7 @@ public class UserService {
 
     @GET
     @Path("/{id}")
+    @Authenticated
     @RolesAllowed("ADMINISTRADOR")
     public Response getUserById(@PathParam("id") long id) {
         User user = userBean.findById(id);

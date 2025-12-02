@@ -1,0 +1,354 @@
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloApplication.java:3: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.ApplicationPath;
+                    ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloApplication.java:4: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.Application;
+                         ^
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloApplication.java:7: error: cannot find symbol
+public class HelloApplication extends Application {
+                                      ^
+  symbol: class Application
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloApplication.java:6: error: cannot find symbol
+@ApplicationPath("/api")
+ ^
+  symbol: class ApplicationPath
+Error on line 13 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:13: error: package jakarta.annotation does not exist
+import jakarta.annotation.Priority;
+                         ^
+Error on line 14 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:14: error: package jakarta.annotation.security does not exist
+import jakarta.annotation.security.DenyAll;
+                                  ^
+Error on line 15 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:15: error: package jakarta.annotation.security does not exist
+import jakarta.annotation.security.PermitAll;
+                                  ^
+Error on line 16 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:16: error: package jakarta.annotation.security does not exist
+import jakarta.annotation.security.RolesAllowed;
+                                  ^
+Error on line 17 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:17: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.Priorities;
+                    ^
+Error on line 18 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:18: error: package jakarta.ws.rs.container does not exist
+import jakarta.ws.rs.container.ContainerRequestContext;
+                              ^
+Error on line 19 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:19: error: package jakarta.ws.rs.container does not exist
+import jakarta.ws.rs.container.ContainerRequestFilter;
+                              ^
+Error on line 20 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:20: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.Context;
+                         ^
+Error on line 21 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:21: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.Response;
+                         ^
+Error on line 22 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:22: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.SecurityContext;
+                         ^
+Error on line 23 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:23: error: package jakarta.ws.rs.ext does not exist
+import jakarta.ws.rs.ext.Provider;
+                        ^
+Error on line 24 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:24: error: package org.jboss.resteasy.core does not exist
+import org.jboss.resteasy.core.ResourceMethodInvoker;
+                              ^
+Error on line 31 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:31: error: cannot find symbol
+public class AuthorizationFilter implements ContainerRequestFilter {
+                                            ^
+  symbol: class ContainerRequestFilter
+Error on line 28 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:28: error: cannot find symbol
+@Provider
+ ^
+  symbol: class Provider
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/Authenticated.java:3: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.NameBinding;
+                    ^
+Error on line 10 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/Authenticated.java:10: error: cannot find symbol
+@NameBinding
+ ^
+  symbol: class NameBinding
+Error on line 30 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:30: error: cannot find symbol
+@Priority(Priorities.AUTHORIZATION)
+ ^
+  symbol: class Priority
+Error on line 32 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:32: error: cannot find symbol
+    private static final Response ACCESS_DENIED = Response.status(401)
+                         ^
+  symbol:   class Response
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.security.AuthorizationFilter
+Error on line 34 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:34: error: cannot find symbol
+    private static final Response ACCESS_FORBIDDEN = Response.status(403)
+                         ^
+  symbol:   class Response
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.security.AuthorizationFilter
+Error on line 37 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:37: error: cannot find symbol
+    private SecurityContext securityContext;
+            ^
+  symbol:   class SecurityContext
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.security.AuthorizationFilter
+Error on line 39 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthorizationFilter.java:39: error: cannot find symbol
+    public void filter(ContainerRequestContext containerRequestContext) {
+                       ^
+  symbol:   class ContainerRequestContext
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.security.AuthorizationFilter
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/TokenIssuer.java:3: error: package io.jsonwebtoken does not exist
+import io.jsonwebtoken.Jwts;
+                      ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/User.java:5: error: cannot find symbol
+@Entity
+ ^
+  symbol: class Entity
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/User.java:6: error: cannot find symbol
+@Inheritance(strategy = InheritanceType.JOINED)
+ ^
+  symbol: class Inheritance
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/User.java:7: error: cannot find symbol
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
+ ^
+  symbol: class DiscriminatorColumn
+Error on line 8 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/User.java:8: error: cannot find symbol
+@Table(name = "users")
+ ^
+  symbol: class Table
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/User.java:3: error: package jakarta.persistence does not exist
+import jakarta.persistence.*;
+^
+Error on line 2 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:2: error: package io.jsonwebtoken does not exist
+import io.jsonwebtoken.Jwts;
+                      ^
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:3: error: package jakarta.annotation does not exist
+import jakarta.annotation.Priority;
+                         ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:4: error: package jakarta.ejb does not exist
+import jakarta.ejb.EJB;
+                  ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:5: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.NotAuthorizedException;
+                    ^
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:6: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.NotFoundException;
+                    ^
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:7: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.Priorities;
+                    ^
+Error on line 8 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:8: error: package jakarta.ws.rs.container does not exist
+import jakarta.ws.rs.container.ContainerRequestContext;
+                              ^
+Error on line 9 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:9: error: package jakarta.ws.rs.container does not exist
+import jakarta.ws.rs.container.ContainerRequestFilter;
+                              ^
+Error on line 10 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:10: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.Context;
+                         ^
+Error on line 11 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:11: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.HttpHeaders;
+                         ^
+Error on line 12 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:12: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.SecurityContext;
+                         ^
+Error on line 13 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:13: error: package jakarta.ws.rs.core does not exist
+import jakarta.ws.rs.core.UriInfo;
+                         ^
+Error on line 14 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:14: error: package jakarta.ws.rs.ext does not exist
+import jakarta.ws.rs.ext.Provider;
+                        ^
+Error on line 22 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:22: error: cannot find symbol
+public class AuthenticationFilter implements ContainerRequestFilter {
+                                             ^
+  symbol: class ContainerRequestFilter
+Error on line 19 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:19: error: cannot find symbol
+@Provider
+ ^
+  symbol: class Provider
+Error on line 21 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:21: error: cannot find symbol
+@Priority(Priorities.AUTHENTICATION)
+ ^
+  symbol: class Priority
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/UserBean.java:3: error: package jakarta.ejb does not exist
+import jakarta.ejb.Stateless;
+                  ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/UserBean.java:4: error: package jakarta.persistence does not exist
+import jakarta.persistence.EntityManager;
+                          ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/UserBean.java:5: error: package jakarta.persistence does not exist
+import jakarta.persistence.PersistenceContext;
+                          ^
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/UserBean.java:6: error: package jakarta.persistence does not exist
+import jakarta.persistence.NoResultException;
+                          ^
+Error on line 12 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/UserBean.java:12: error: cannot find symbol
+@Stateless
+ ^
+  symbol: class Stateless
+Error on line 27 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:27: error: cannot find symbol
+    private UriInfo uriInfo;
+            ^
+  symbol:   class UriInfo
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.security.AuthenticationFilter
+Error on line 30 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/security/AuthenticationFilter.java:30: error: cannot find symbol
+    public void filter(ContainerRequestContext requestContext) {
+                       ^
+  symbol:   class ContainerRequestContext
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.security.AuthenticationFilter
+Error on line 16 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/UserBean.java:16: error: cannot find symbol
+    private EntityManager em;
+            ^
+  symbol:   class EntityManager
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ResponsavelBean.java:3: error: package jakarta.ejb does not exist
+import jakarta.ejb.Stateless;
+                  ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ResponsavelBean.java:4: error: package jakarta.persistence does not exist
+import jakarta.persistence.EntityManager;
+                          ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ResponsavelBean.java:5: error: package jakarta.persistence does not exist
+import jakarta.persistence.PersistenceContext;
+                          ^
+Error on line 9 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ResponsavelBean.java:9: error: cannot find symbol
+@Stateless
+ ^
+  symbol: class Stateless
+Error on line 13 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ResponsavelBean.java:13: error: cannot find symbol
+    private EntityManager em;
+            ^
+  symbol:   class EntityManager
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.ejbs.ResponsavelBean
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Responsavel.java:5: error: cannot find symbol
+@Entity
+ ^
+  symbol: class Entity
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Responsavel.java:6: error: cannot find symbol
+@DiscriminatorValue("RESPONSAVEL")
+ ^
+  symbol: class DiscriminatorValue
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Responsavel.java:7: error: cannot find symbol
+@Table(name = "responsaveis")
+ ^
+  symbol: class Table
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Responsavel.java:3: error: package jakarta.persistence does not exist
+import jakarta.persistence.*;
+^
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ColaboradorBean.java:3: error: package jakarta.ejb does not exist
+import jakarta.ejb.Stateless;
+                  ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ColaboradorBean.java:4: error: package jakarta.persistence does not exist
+import jakarta.persistence.EntityManager;
+                          ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ColaboradorBean.java:5: error: package jakarta.persistence does not exist
+import jakarta.persistence.PersistenceContext;
+                          ^
+Error on line 9 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ColaboradorBean.java:9: error: cannot find symbol
+@Stateless
+ ^
+  symbol: class Stateless
+Error on line 13 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ColaboradorBean.java:13: error: cannot find symbol
+    private EntityManager em;
+            ^
+  symbol:   class EntityManager
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.ejbs.ColaboradorBean
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Colaborador.java:5: error: cannot find symbol
+@Entity
+ ^
+  symbol: class Entity
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Colaborador.java:6: error: cannot find symbol
+@DiscriminatorValue("COLABORADOR")
+ ^
+  symbol: class DiscriminatorValue
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Colaborador.java:7: error: cannot find symbol
+@Table(name = "colaboradores")
+ ^
+  symbol: class Table
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Colaborador.java:3: error: package jakarta.persistence does not exist
+import jakarta.persistence.*;
+^
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/StudentBean.java:3: error: package jakarta.ejb does not exist
+import jakarta.ejb.Stateless; // [cite: 1693, 1699]
+                  ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/StudentBean.java:4: error: package jakarta.persistence does not exist
+import jakarta.persistence.EntityManager; // [cite: 1695, 1702]
+                          ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/StudentBean.java:5: error: package jakarta.persistence does not exist
+import jakarta.persistence.PersistenceContext; // [cite: 1695, 1701]
+                          ^
+Error on line 8 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/StudentBean.java:8: error: cannot find symbol
+@Stateless
+ ^
+  symbol: class Stateless
+Error on line 12 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/StudentBean.java:12: error: cannot find symbol
+    private EntityManager entityManager;
+            ^
+  symbol:   class EntityManager
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.ejbs.StudentBean
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:3: error: package jakarta.annotation does not exist
+import jakarta.annotation.PostConstruct;
+                         ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:4: error: package jakarta.ejb does not exist
+import jakarta.ejb.Singleton;
+                  ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:5: error: package jakarta.ejb does not exist
+import jakarta.ejb.Startup;
+                  ^
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:6: error: package jakarta.ejb does not exist
+import jakarta.ejb.EJB;
+                  ^
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:7: error: package jakarta.persistence does not exist
+import jakarta.persistence.EntityManager;
+                          ^
+Error on line 8 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:8: error: package jakarta.persistence does not exist
+import jakarta.persistence.PersistenceContext;
+                          ^
+Error on line 15 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:15: error: cannot find symbol
+@Singleton
+ ^
+  symbol: class Singleton
+Error on line 16 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:16: error: cannot find symbol
+@Startup
+ ^
+  symbol: class Startup
+Error on line 22 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/ConfigBean.java:22: error: cannot find symbol
+    private EntityManager em;
+            ^
+  symbol:   class EntityManager
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.ejbs.ConfigBean
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/AdministradorBean.java:3: error: package jakarta.ejb does not exist
+import jakarta.ejb.Stateless;
+                  ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/AdministradorBean.java:4: error: package jakarta.persistence does not exist
+import jakarta.persistence.EntityManager;
+                          ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/AdministradorBean.java:5: error: package jakarta.persistence does not exist
+import jakarta.persistence.PersistenceContext;
+                          ^
+Error on line 10 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/AdministradorBean.java:10: error: cannot find symbol
+@Stateless
+ ^
+  symbol: class Stateless
+Error on line 14 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/ejbs/AdministradorBean.java:14: error: cannot find symbol
+    private EntityManager em;
+            ^
+  symbol:   class EntityManager
+  location: class pt.ipleiria.estg.dei.ei.dae.academics.ejbs.AdministradorBean
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Administrador.java:5: error: cannot find symbol
+@Entity
+ ^
+  symbol: class Entity
+Error on line 6 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Administrador.java:6: error: cannot find symbol
+@DiscriminatorValue("ADMINISTRADOR")
+ ^
+  symbol: class DiscriminatorValue
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Administrador.java:7: error: cannot find symbol
+@Table(name = "administradores")
+ ^
+  symbol: class Table
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/entities/Administrador.java:3: error: package jakarta.persistence does not exist
+import jakarta.persistence.*;
+^
+Error on line 3 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloResource.java:3: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.GET;
+                    ^
+Error on line 4 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloResource.java:4: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.Path;
+                    ^
+Error on line 5 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloResource.java:5: error: package jakarta.ws.rs does not exist
+import jakarta.ws.rs.Produces;
+                    ^
+Error on line 7 in /Users/juze02/Desktop/Uni Pos lab/DAE/projeto-DAE/academics/src/main/java/pt/ipleiria/estg/dei/ei/dae/academics/HelloResource.java:7: error: cannot find symbol
+@Path("/hello-world")
+ ^
+  symbol: class Path
