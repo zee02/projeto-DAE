@@ -3,90 +3,72 @@ package pt.ipleiria.estg.dei.ei.dae.academics.ejbs;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.NoResultException;
-import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Hasher;
-
 import java.util.List;
 
 @Stateless
 public class UserBean {
-
-    @PersistenceContext(unitName = "AcademicsPersistenceUnit")
+    @PersistenceContext
     private EntityManager em;
 
-    private Hasher hasher = new Hasher();
-
-    /**
-     * Encontra um utilizador pelo username
-     * @param username nome do utilizador
-     * @return User se encontrado, null caso contrário
-     */
-    public User find(String username) {
+    public User find(String email) {
         try {
-            return em.createQuery("SELECT u FROM User u WHERE u.username = :username", User.class)
-                    .setParameter("username", username)
+            return em.createNamedQuery("findUserByEmail", User.class)
+                    .setParameter("email", email)
                     .getSingleResult();
-        } catch (NoResultException e) {
+        } catch (Exception e) {
             return null;
         }
     }
 
-    /**
-     * Verifica se um utilizador pode fazer login
-     * @param username nome do utilizador
-     * @param password password em texto plano
-     * @return true se credenciais corretas e utilizador ativo, false caso contrário
-     */
-    public boolean canLogin(String username, String password) {
-        User user = find(username);
-        if (user == null || !user.isActive()) {
-            return false;
+    // OBRIGATORIO: Retorno e do tipo 'User'
+    public User findOrFail(String email) {
+        User user = find(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found with email: " + email);
         }
-        return hasher.verify(password, user.getPasswordHash());
+        return user;
     }
 
-    /**
-     * Cria um novo utilizador
-     * @param user entidade do utilizador
-     */
-    public void create(User user) {
-        em.persist(user);
+    public boolean canLogin(String email, String password) {
+        User user = find(email);
+        return user != null && Hasher.verify(password, user.getPassword());
     }
 
-    /**
-     * Atualiza um utilizador
-     * @param user entidade do utilizador
-     */
-    public void update(User user) {
-        em.merge(user);
-    }
-
-    /**
-     * Remove um utilizador
-     * @param userId ID do utilizador
-     */
-    public void remove(Long userId) {
-        User user = em.find(User.class, userId);
+    public User create(String password, String name, String email, String role) {
+        User user = find(email);
         if (user != null) {
-            em.remove(user);
+            throw new IllegalArgumentException("User already exists with email: " + email);
         }
+
+        String hashedPassword = Hasher.hash(password);
+
+        switch (role) {
+            case "Administrador":
+                user = new Administrator(email, hashedPassword, name);
+                break;
+            case "Responsável":
+                user = new Responsible(email, hashedPassword, name);
+                break;
+            case "Colaborador":
+                user = new Collaborator(email, hashedPassword, name);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid Role: " + role);
+        }
+
+        em.persist(user);
+        return user;
     }
 
-    /**
-     * Encontra todos os utilizadores
-     * @return Lista de todos os utilizadores
-     */
+    public void deactivate(long userId) throws EntityNotFoundException {
+        User u = em.find(User.class, userId);
+        if (u == null) throw new EntityNotFoundException();
+        u.setActive(false);
+    }
+
     public List<User> findAll() {
-        return em.createQuery("SELECT u FROM User u", User.class).getResultList();
-    }
-
-    /**
-     * Encontra um utilizador pelo ID
-     * @param id ID do utilizador
-     * @return User se encontrado, null caso contrário
-     */
-    public User findById(long id) {
-        return em.find(User.class, id);
+        return em.createNamedQuery("getAllUsers", User.class).getResultList();
     }
 }
