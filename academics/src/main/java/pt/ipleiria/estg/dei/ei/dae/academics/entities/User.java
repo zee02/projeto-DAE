@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -33,6 +34,9 @@ public class User implements Serializable {
 
     // Novo campo para resolver o erro setActive
     private boolean active = true;
+
+    @OneToMany(mappedBy = "author")
+    public List<Publication> publications;
 
     public User() {
     }

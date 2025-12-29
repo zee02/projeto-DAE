@@ -9,6 +9,8 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
+import jakarta.persistence.EntityNotFoundException;
+
 import java.util.List;
 
 @Path("users")

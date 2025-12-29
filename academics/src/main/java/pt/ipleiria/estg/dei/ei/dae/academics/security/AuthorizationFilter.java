@@ -9,7 +9,7 @@ specified on methods of the same class;
 @RolesAllowed is specified at the class level and @PermitAll or @DenyAll are
 specified on methods of the same class.
 */
-//import ... // import required jakarta dependencies
+// import required jakarta dependencies
 import jakarta.annotation.Priority;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;

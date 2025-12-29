@@ -5,11 +5,17 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 @Startup
 @Singleton
 public class ConfigBean {
     @EJB
     private UserBean userBean;
+
+    @EJB
+    private PublicationBean publicationBean;
 
     @PostConstruct
     public void populateDB() {
@@ -18,6 +24,9 @@ public class ConfigBean {
             userBean.create("123", "Admin Chief", "admin@mail.com", "Administrador");
             userBean.create("123", "Collaborator Joe", "colab@mail.com", "Colaborador");
             userBean.create("123", "Responsible Guy", "resp@mail.com", "Responsável");
+            userBean.create("123", "duarte", "duarte@mail.com", "Responsável");
+
+
 
             System.out.println("Users populated successfully!");
         } catch (Exception e) {

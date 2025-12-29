@@ -15,11 +15,9 @@ public class Comment implements Serializable {
     private String content;
 
     @ManyToOne
-    @JoinColumn(name = "author_id")
     private User author;
 
     @ManyToOne
-    @JoinColumn(name = "publication_id")
     private Publication publication;
 
     @Temporal(TemporalType.TIMESTAMP)

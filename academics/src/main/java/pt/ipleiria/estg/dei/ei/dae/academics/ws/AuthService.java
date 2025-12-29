@@ -1,44 +1,81 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.ws;
 
+
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
+
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.AuthDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.LoginResponseDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.AuthResponseDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.TokenIssuer;
 
 @Path("auth")
-@Produces(MediaType.APPLICATION_JSON)
-@Consumes(MediaType.APPLICATION_JSON)
+@Produces({MediaType.APPLICATION_JSON})
+@Consumes({MediaType.APPLICATION_JSON})
 public class AuthService {
     @EJB
     private UserBean userBean;
 
+    @Context
+    private SecurityContext securityContext;
     @POST
     @Path("/login")
-    public Response login(@Valid AuthDTO auth) {
-        if (userBean.canLogin(auth.getEmail(), auth.getPassword())) {
-            // 1. Recuperar o User (objeto)
-            User user = userBean.findOrFail(auth.getEmail());
+    public Response authenticate(@Valid AuthDTO auth) {
 
-            // 2. Gerar token usando o User (TokenIssuer espera um User)
-            String token = TokenIssuer.issue(user);
-
-            // 3. Resposta
-            return Response.ok(new LoginResponseDTO(token, UserDTO.from(user))).build();
+        if (!userBean.canLogin(auth.getEmail(), auth.getPassword())) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Invalid credentials")
+                    .build();
         }
-        return Response.status(Response.Status.UNAUTHORIZED).entity("Credenciais inválidas").build();
+
+        String token = TokenIssuer.issue(auth.getEmail());
+        User user = userBean.find(auth.getEmail());
+
+        AuthResponseDTO response =
+                new AuthResponseDTO(
+                        "Autenticação bem-sucedida",
+                        token,
+                        user
+                );
+
+        return Response.ok(response).build();
     }
 
-    @POST
-    @Path("/logout")
-    public Response logout() {
-        // Implement logout logic if needed (e.g., invalidate token)
-        return Response.ok().build();
+
+    /*@PATCH
+    @Path("/set-password")
+    @RolesAllowed({"Administrator", "Student", "Teacher"})
+    @Authenticated
+    public Response updatePassword(@Valid AuthDTO auth) {
+        try {
+            var principal = securityContext.getUserPrincipal();
+
+            // Exemplo: o novo password vem do campo "password" no AuthDTO
+            userBean.updatePassword(principal.getName(), auth.getPassword());
+
+            return Response.ok().entity("Password updated successfully").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Error updating password: " + e.getMessage())
+                    .build();
+        }
+    }*/
+
+    @GET
+    @Authenticated
+    @Path("/user")
+    public Response getAuthenticatedUser() {
+        var username = securityContext.getUserPrincipal().getName();
+        var user = userBean.find(username);
+        return Response.ok(UserDTO.from(user)).build();
     }
 }

@@ -6,6 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Hasher;
 import java.util.List;
+import jakarta.persistence.EntityNotFoundException;
 
 @Stateless
 public class UserBean {

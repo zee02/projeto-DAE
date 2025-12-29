@@ -1,4 +1,5 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.security;
+
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.Priority;
 import jakarta.ejb.EJB;
@@ -13,6 +14,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
+
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Principal;
 
@@ -22,7 +24,6 @@ import java.security.Principal;
 public class AuthenticationFilter implements ContainerRequestFilter {
     @EJB
     private UserBean userBean;
-
     @Context
     private UriInfo uriInfo;
 
@@ -30,21 +31,12 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) {
         var header = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
         if (header == null || !header.startsWith("Bearer ")) {
-            throw new NotAuthorizedException("Authorization header must be provided");
+            throw new
+                    NotAuthorizedException("Authorization header must be provided");
         }
-
-        String token = header.substring("Bearer ".length()).trim();
-        String username = getUsername(token);
-
-        if (username == null) {
-            throw new NotAuthorizedException("Invalid token");
-        }
-
-        var user = userBean.find(username);
-        if (user == null) {
-            throw new NotFoundException("User not found");
-        }
-
+        // Get token from the HTTP Authorization header
+        String token = header.substring("Bearer".length()).trim();
+        var user = userBean.find(getUsername(token));
         requestContext.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
@@ -52,13 +44,15 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             }
 
             @Override
-            public boolean isUserInRole(String role) {
-                return user.getRole() != null && user.getRole().equals(role);
+            public boolean isUserInRole(String s) {
+                return
+                        org.hibernate.Hibernate.getClass(user).getSimpleName().equals(s);
             }
 
             @Override
             public boolean isSecure() {
                 return uriInfo.getAbsolutePath().toString().startsWith("https");
+
             }
 
             @Override
@@ -69,7 +63,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     }
 
     private String getUsername(String token) {
-        var key = new SecretKeySpec(TokenIssuer.SECRET_KEY, TokenIssuer.ALGORITHM);
+        var key = new SecretKeySpec(
+                TokenIssuer.SECRET_KEY, TokenIssuer.ALGORITHM);
         try {
             return Jwts.parser()
                     .verifyWith(key)
@@ -77,10 +72,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     .parseSignedClaims(token)
                     .getPayload()
                     .getSubject();
-        } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            throw new NotAuthorizedException("Token expired");
         } catch (Exception e) {
-            throw new NotAuthorizedException("Invalid token");
+            throw new NotAuthorizedException("Invalid JWT");
         }
     }
 }

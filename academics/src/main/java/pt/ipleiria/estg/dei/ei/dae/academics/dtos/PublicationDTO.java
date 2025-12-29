@@ -1,53 +1,122 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.dtos;
 
+import jakarta.json.bind.annotation.JsonbProperty;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
+
 import java.io.Serializable;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PublicationDTO implements Serializable {
+
     private Long id;
     private String title;
+
+    @JsonbProperty("scientific_area")
     private String scientificArea;
+
     private String summary;
-    private boolean isVisible;
-    private String authorName; // Simplificado para DTO
+
+    @JsonbProperty("is_visible")
+    private boolean visible;
+
+    @JsonbProperty("file_url")
+    private String fileUrl;
+
+    private AuthorDTO author;
+
+    @JsonbProperty("average_rating")
     private double averageRating;
+
+    @JsonbProperty("ratings_count")
     private int ratingsCount;
-    // Falta incluir TagsDTO, mas por agora fica simples
+
+    private List<String> tags;
+
+    @JsonbProperty("created_at")
+    private String createdAt;
+
+
+    public static List<PublicationDTO> from(List<Publication> publications) {
+        return publications.stream()
+                .map(PublicationDTO::from)
+                .collect(java.util.stream.Collectors.toList());
+    }
 
     public static PublicationDTO from(Publication p) {
         PublicationDTO dto = new PublicationDTO();
-        dto.setId(p.getId());
-        dto.setTitle(p.getTitle());
-        dto.setScientificArea(p.getScientificArea());
-        dto.setSummary(p.getSummary());
-        dto.setVisible(p.isVisible());
-        dto.setAuthorName(p.getAuthor().getName());
-        dto.setAverageRating(p.getAverageRating());
-        dto.setRatingsCount(p.getRatingsCount());
+        dto.id = p.getId();
+        dto.title = p.getTitle();
+        dto.scientificArea = p.getScientificArea();
+        dto.summary = p.getSummary();
+        dto.visible = p.isVisible();
+        dto.fileUrl = "/api/posts/" + p.getId() + "/file";
+        dto.author = AuthorDTO.from(p.getAuthor());
+        dto.averageRating = p.getAverageRating();
+        dto.ratingsCount = p.getRatingsCount();
+
+        dto.tags = p.getTags() == null
+                ? List.of()
+                : p.getTags().stream()
+                .map(Tag::getName)   // ⚠️ ajusta ao getter real
+                .collect(Collectors.toList());
+
+        dto.createdAt = p.getSubmissionDate()
+                .toInstant()
+                .atOffset(ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_INSTANT);
+
         return dto;
     }
 
-    public static List<PublicationDTO> from(List<Publication> posts) {
-        return posts.stream().map(PublicationDTO::from).collect(Collectors.toList());
+    /* getters JavaBeans */
+
+    public Long getId() {
+        return id;
     }
 
-    // Getters e Setters...
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getScientificArea() { return scientificArea; }
-    public void setScientificArea(String scientificArea) { this.scientificArea = scientificArea; }
-    public String getSummary() { return summary; }
-    public void setSummary(String summary) { this.summary = summary; }
-    public boolean isVisible() { return isVisible; }
-    public void setVisible(boolean visible) { isVisible = visible; }
-    public String getAuthorName() { return authorName; }
-    public void setAuthorName(String authorName) { this.authorName = authorName; }
-    public double getAverageRating() { return averageRating; }
-    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
-    public int getRatingsCount() { return ratingsCount; }
-    public void setRatingsCount(int ratingsCount) { this.ratingsCount = ratingsCount; }
+    public String getTitle() {
+        return title;
+    }
+
+    public String getScientificArea() {
+        return scientificArea;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public AuthorDTO getAuthor() {
+        return author;
+    }
+
+    public double getAverageRating() {
+        return averageRating;
+    }
+
+    public int getRatingsCount() {
+        return ratingsCount;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+
 }

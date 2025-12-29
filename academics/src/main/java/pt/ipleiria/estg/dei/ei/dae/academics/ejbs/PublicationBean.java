@@ -4,13 +4,19 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Stateless
@@ -23,25 +29,50 @@ public class PublicationBean {
 
     private static final String UPLOAD_DIR = "/tmp/uploads";
 
-    public Publication create(String title, String area, String summary, String authorEmail, InputStream fileData, String fileName) throws IOException {
+
+    public Publication create(MultipartFormDataInput input, String authorEmail) throws IOException {
+
+        Map<String, List<InputPart>> formParts = input.getFormDataMap();
+
+
+        if (!formParts.containsKey("title") || !formParts.containsKey("scientific_area") ||  !formParts.containsKey("file")) {
+            throw new WebApplicationException(
+                    "Missing required fields",
+                    Response.Status.BAD_REQUEST
+            );
+        }
+
+        String title = formParts.get("title").get(0).getBodyAsString();
+        String area = formParts.get("scientific_area").get(0).getBodyAsString();
+
+        String summary = null;
+        if (formParts.containsKey("summary")) {
+            summary = formParts.get("summary").get(0).getBodyAsString();
+        }
+
+        InputPart filePart = formParts.get("file").get(0);
+        String fileName = PublicationUtils.getFileName(filePart.getHeaders());
+        InputStream fileData = filePart.getBody(InputStream.class, null);
+
         User author = userBean.findOrFail(authorEmail);
 
-        // 1. Gravar Ficheiro no Disco
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
+        // Guardar ficheiro
+        String uniqueFileName = UUID.randomUUID() + "_" + fileName;
         Path path = Paths.get(UPLOAD_DIR, uniqueFileName);
         Files.createDirectories(path.getParent());
         Files.copy(fileData, path, StandardCopyOption.REPLACE_EXISTING);
 
-        // 2. Se o resumo vier vazio, colocamos placeholder (Futuro: IA)
-        if (summary == null || summary.isEmpty()) {
+        // Summary automático
+        if (summary == null || summary.isBlank()) {
             summary = "Resumo pendente de geração automática.";
         }
 
-        // 3. Criar e Persistir Entidade
         Publication publication = new Publication(title, area, summary, path.toString(), author);
+
         em.persist(publication);
         return publication;
     }
+
 
     public List<Publication> getAllPublic() {
         return em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
