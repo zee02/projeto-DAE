@@ -17,6 +17,12 @@ public class ConfigBean {
     @EJB
     private PublicationBean publicationBean;
 
+    @EJB
+    private RatingBean ratingBean;
+
+    @EJB
+    private TagBean tagBean ;
+
     @PostConstruct
     public void populateDB() {
         try {
@@ -27,6 +33,18 @@ public class ConfigBean {
             userBean.create("123", "duarte", "duarte@mail.com", "Responsável");
 
 
+            publicationBean.create("Primeira publicação", "Engenharia Informática", "duarte@mail.com");
+            publicationBean.create("Segunda Publicaçao", "Engenharia Civil", "colab@mail.com");
+
+
+            ratingBean.giveRating(1L, "duarte@mail.com", 4);
+            ratingBean.giveRating(2L, "duarte@mail.com", 5);
+
+            tagBean.create("Tag 1");
+            tagBean.create("Tag 2");
+            tagBean.create("Tag 4");
+
+            tagBean.associateTagtoPublication(1,1);
 
             System.out.println("Users populated successfully!");
         } catch (Exception e) {

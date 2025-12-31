@@ -5,8 +5,13 @@ import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 @Entity
+@NamedQueries({
+        @NamedQuery(
+                name = "findAllTags",
+                query = "SELECT t FROM Tag t "
+        )
+})
 @Table(name = "tags")
 public class Tag implements Serializable {
     @Id
@@ -51,5 +56,9 @@ public class Tag implements Serializable {
 
     public void setPublications(List<Publication> publications) {
         this.publications = publications;
+    }
+
+    public void addPublication(Publication publication) {
+        this.publications.add(publication);
     }
 }

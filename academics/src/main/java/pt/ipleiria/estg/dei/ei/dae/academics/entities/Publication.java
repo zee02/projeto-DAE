@@ -10,7 +10,9 @@ import java.util.List;
 @Entity
 @Table(name = "publications")
 @NamedQueries({
-        @NamedQuery(name = "getAllPublicPosts", query = "SELECT p FROM Publication p WHERE p.isVisible = true ORDER BY p.submissionDate DESC"),
+        @NamedQuery(
+                name = "getAllPublicPosts",
+                query = " SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = true ORDER BY p.submissionDate DESC"),
         @NamedQuery(name = "getMyPosts", query = "SELECT p FROM Publication p WHERE p.author.email = :email ORDER BY p.submissionDate DESC")
 })
 public class Publication implements Serializable {
@@ -44,9 +46,17 @@ public class Publication implements Serializable {
     private User author; // Quem submeteu
 
     @ManyToMany
-    @JoinTable(name = "publications_tags",
-            joinColumns = @JoinColumn(name = "publication_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JoinTable(
+            name = "publications_tags",
+            joinColumns = @JoinColumn(
+                    name = "publication_id",
+                    referencedColumnName = "id"
+            ),
+            inverseJoinColumns = @JoinColumn(
+                    name = "tag_id",
+                    referencedColumnName = "id"
+            )
+    )
     private List<Tag> tags;
 
     @OneToMany(mappedBy = "publication")
@@ -60,16 +70,17 @@ public class Publication implements Serializable {
         this.comments = new ArrayList<>();
         this.ratings = new ArrayList<>();
         this.submissionDate = new Date();
-        this.isVisible = false; // Default false (EP01)
+
     }
 
-    public Publication(String title, String scientificArea, String summary, String filePath, User author) {
+    public Publication(String title, String scientificArea, boolean isVisible, String summary, String filePath, User author) {
         this();
         this.title = title;
         this.scientificArea = scientificArea;
         this.summary = summary;
         this.filePath = filePath;
         this.author = author;
+        this.isVisible = isVisible;
     }
 
     // Métodos Auxiliares

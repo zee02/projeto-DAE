@@ -9,7 +9,9 @@ import jakarta.ws.rs.core.Response;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 
 import java.io.IOException;
@@ -28,6 +30,17 @@ public class PublicationBean {
     private UserBean userBean;
 
     private static final String UPLOAD_DIR = "/tmp/uploads";
+
+    public void create(String title, String scientificArea, String authorEmail) {
+
+
+        User author = userBean.findOrFail(authorEmail);
+
+        Publication publication = new Publication(title, scientificArea, true,"Resumo AI", "file", author);
+
+        em.persist(publication);
+    }
+
 
 
     public Publication create(MultipartFormDataInput input, String authorEmail) throws IOException {
@@ -67,7 +80,7 @@ public class PublicationBean {
             summary = "Resumo pendente de geração automática.";
         }
 
-        Publication publication = new Publication(title, area, summary, path.toString(), author);
+        Publication publication = new Publication(title, area, false,summary, path.toString(), author);
 
         em.persist(publication);
         return publication;
@@ -81,4 +94,6 @@ public class PublicationBean {
     public Publication find(Long id) {
         return em.find(Publication.class, id);
     }
+
+
 }

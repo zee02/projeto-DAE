@@ -1,17 +1,27 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 
 @Entity
+@NamedQueries({
+        @NamedQuery(
+                name = "findRatingByPublicationAndUser",
+                query = "SELECT r FROM Rating r " +
+                        "WHERE r.publication.id = :postId AND r.user = :user"
+        )
+})
 @Table(name = "ratings")
 public class Rating implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private int score;
+    private Integer score;
 
     @ManyToOne
     private Publication publication;
@@ -27,6 +37,9 @@ public class Rating implements Serializable {
         this.publication = publication;
         this.user = user;
     }
+
+
+
 
     // Getters/Setters básicos
     public Long getId() {
