@@ -81,6 +81,11 @@ public class Publication implements Serializable {
         this.filePath = filePath;
         this.author = author;
         this.isVisible = isVisible;
+        this.tags = new ArrayList<>();
+        this.comments = new ArrayList<>();
+        this.ratings = new ArrayList<>();
+        this.submissionDate = new Date();
+
     }
 
     // Métodos Auxiliares

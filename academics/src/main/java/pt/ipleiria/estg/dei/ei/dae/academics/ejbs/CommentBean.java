@@ -4,6 +4,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CommentDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Comment;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
@@ -38,10 +39,8 @@ public class CommentBean {
     }
 
 
-    public Comment create(Long publicationId, String email, CommentDTO comment) throws MyEntityNotFoundException {
+    public Comment create(Publication publication, String email, CommentDTO comment) throws MyEntityNotFoundException {
         User user = userBean.find(email);
-        Publication publication = publicationBean.find(publicationId);
-
 
         Comment newComent = new Comment();
         newComent.setAuthor(user);
@@ -49,6 +48,7 @@ public class CommentBean {
         newComent.setPublication(publication);
         newComent.setCreatedAt(Instant.now());
 
+        publication.getComments().add(newComent);
         em.merge(newComent);
         return newComent;
 

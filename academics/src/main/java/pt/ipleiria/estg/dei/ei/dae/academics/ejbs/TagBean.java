@@ -3,6 +3,7 @@ package pt.ipleiria.estg.dei.ei.dae.academics.ejbs;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.*;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
@@ -10,6 +11,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,9 +29,9 @@ public class TagBean {
     public Tag findAll() {
 
         List<Tag> results = em.createNamedQuery(
-                        "findAllTags",
-                        Tag.class
-                ).getResultList();
+                "findAllTags",
+                Tag.class
+        ).getResultList();
 
         return results.isEmpty() ? null : results.get(0);
     }
@@ -43,22 +45,28 @@ public class TagBean {
         Tag newTag = new Tag();
         newTag.setName(nomeTag);
         em.persist(newTag);
-        return  newTag;
+        return newTag;
     }
 
-    public void associateTagtoPublication(long tag_id, long post_id) throws MyEntityNotFoundException {
+    public void associateTagToPublication(TagDTO tags, long post_id) throws MyEntityNotFoundException {
 
         Publication publication = em.find(Publication.class, post_id);
 
         if (publication == null) {
             throw new MyEntityNotFoundException("Publication with id " + post_id + " not found.");
         }
-        Tag tag = em.find(Tag.class, tag_id);
-        if (tag == null) {
-            throw new MyEntityNotFoundException("tag with id " + tag_id + "was not found.");
+
+        for (Long tagId : tags.getTags()) {
+            Tag tag = em.find(Tag.class, tagId);
+
+            if (tag == null) {
+                throw new MyEntityNotFoundException("Tag with id " + tagId + " not found.");
+            }
+
+            // manter os dois lados sincronizados
+            publication.getTags().add(tag);
+            tag.getPublications().add(publication);
         }
-        tag.addPublication(publication);
-        publication.getTags().add(tag);
 
 
     }

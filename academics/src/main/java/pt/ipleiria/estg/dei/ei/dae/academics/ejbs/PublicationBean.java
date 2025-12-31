@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import org.hibernate.Hibernate;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
@@ -91,9 +92,25 @@ public class PublicationBean {
         return em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
     }
 
-    public Publication find(Long id) {
-        return em.find(Publication.class, id);
+    public Publication findWithTags(Long id) {
+        Publication p = em.find(Publication.class, id);
+        Hibernate.initialize(p.getTags());
+        return p;
     }
 
+    public Publication findWithRatings(Long id) {
+        Publication p = em.find(Publication.class, id);
+        Hibernate.initialize(p.getRatings());
+        return p;
+    }
+
+
+    public Publication findWithComments(Long id) {
+        Publication p = em.find(Publication.class, id);
+
+        Hibernate.initialize(p.getComments()); // se precisares
+
+        return p;
+    }
 
 }

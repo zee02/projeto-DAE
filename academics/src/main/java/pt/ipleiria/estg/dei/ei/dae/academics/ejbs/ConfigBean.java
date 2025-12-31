@@ -4,9 +4,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 @Startup
 @Singleton
@@ -44,7 +46,14 @@ public class ConfigBean {
             tagBean.create("Tag 2");
             tagBean.create("Tag 4");
 
-            tagBean.associateTagtoPublication(1,1);
+            TagDTO tagIds = new TagDTO();
+
+            ArrayList<Long> tags = new ArrayList<>();
+            tags.add(1L);
+
+            tagIds.setTags(tags);
+
+            tagBean.associateTagToPublication(tagIds, 1L);
 
             System.out.println("Users populated successfully!");
         } catch (Exception e) {

@@ -59,7 +59,7 @@ public class RatingBean {
 
         Rating newRating;
         if (existentRating == null) {
-            Publication publication = publicationBean.find(postId);
+            Publication publication = publicationBean.findWithRatings(postId);
 
             if (publication == null) {
                 throw new MyEntityNotFoundException( "Publication with id " + postId + " not found");

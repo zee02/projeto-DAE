@@ -39,6 +39,7 @@ public class PublicationDTO implements Serializable {
     @JsonbProperty("created_at")
     private String createdAt;
 
+    private List<CommentDTO> comments;
 
     public static List<PublicationDTO> from(List<Publication> publications) {
         return publications.stream()
@@ -62,6 +63,12 @@ public class PublicationDTO implements Serializable {
                 ? List.of()
                 : p.getTags().stream()
                 .map(Tag::getName)   // ⚠️ ajusta ao getter real
+                .collect(Collectors.toList());
+        dto.comments = p.getComments() == null
+                ? List.of()
+                : p.getComments()
+                .stream()
+                .map(CommentDTO::from)
                 .collect(Collectors.toList());
 
         dto.createdAt = p.getSubmissionDate()
@@ -113,7 +120,9 @@ public class PublicationDTO implements Serializable {
     public List<String> getTags() {
         return tags;
     }
-
+    public List<CommentDTO> getComments() {
+        return comments;
+    }
     public String getCreatedAt() {
         return createdAt;
     }

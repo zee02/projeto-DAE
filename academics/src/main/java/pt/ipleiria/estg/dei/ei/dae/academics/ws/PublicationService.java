@@ -7,12 +7,11 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CommentDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.RatingDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.CommentBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.PublicationBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.RatingBean;
+import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.TagBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Comment;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
@@ -22,6 +21,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +37,8 @@ public class PublicationService {
 
     @EJB
     private CommentBean commentBean;
+    @EJB
+    private TagBean tagBean;
 
     @Context
     private SecurityContext securityContext;
@@ -81,25 +83,33 @@ public class PublicationService {
     @POST
     @Authenticated
     @Path("/{post_id}/comments")
-    public Response createComment(@PathParam("post_id")Long post_id, @Valid CommentDTO commentDTO) throws MyEntityNotFoundException {String email = securityContext.getUserPrincipal().getName();
+    public Response createComment(@PathParam("post_id")Long post_id, @Valid CommentDTO commentDTO) throws MyEntityNotFoundException {
+        String email = securityContext.getUserPrincipal().getName();
 
-        Comment comment = commentBean.create(post_id, email, commentDTO);
+        Publication publication = publicationBean.findWithComments(post_id);
+
+        commentBean.create(publication, email, commentDTO);
 
 
-        return Response.ok(CommentDTO.from(comment)).build();
+        PublicationWithCommentsDTO dto = PublicationWithCommentsDTO.from(publication);
+
+        return Response.ok(dto).build();
     }
 
 
-    /*@POST
+    @POST
     @Authenticated
-    @Path("/{post_id}/comments")
-    public Response createComment(@PathParam("post_id")Long post_id, @Valid CommentDTO commentDTO) throws MyEntityNotFoundException {String email = securityContext.getUserPrincipal().getName();
+    @Path("/{post_id}/tags")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response associateTag(@PathParam("post_id")Long post_id, TagDTO tags) throws MyEntityNotFoundException {
 
-        Comment comment = commentBean.create(post_id, email, commentDTO);
+        tagBean.associateTagToPublication(tags, post_id);
 
+        Publication publication = publicationBean.findWithTags(post_id);
 
-        return Response.ok(CommentDTO.from(comment)).build();
-    }*/
+        return Response.ok(PublicationDTO.from(publication)).build();
+    }
 
 
 
