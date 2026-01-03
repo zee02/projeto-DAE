@@ -4,7 +4,6 @@ import io.jsonwebtoken.Jwts;
 import jakarta.annotation.Priority;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
@@ -14,6 +13,9 @@ import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Administrator;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Collaborator;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Responsible;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Principal;
@@ -36,18 +38,30 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         }
         // Get token from the HTTP Authorization header
         String token = header.substring("Bearer".length()).trim();
-        var user = userBean.find(getUsername(token));
+        var user = userBean.find(getUserId(token));
+
+
         requestContext.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
-                return user::getUsername;
+                return user::getIdAsString;
             }
 
             @Override
-            public boolean isUserInRole(String s) {
-                return
-                        org.hibernate.Hibernate.getClass(user).getSimpleName().equals(s);
+            public boolean isUserInRole(String role) {
+
+                if (role.equals("Administrador") && user instanceof Administrator) {
+                    return true;
+                }
+                if (role.equals("Responsavel") && user instanceof Responsible) {
+                    return true;
+                }
+                if (role.equals("Colaborador") && user instanceof Collaborator) {
+                    return true;
+                }
+                return false;
             }
+
 
             @Override
             public boolean isSecure() {
@@ -62,9 +76,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         });
     }
 
-    private String getUsername(String token) {
-        var key = new SecretKeySpec(
-                TokenIssuer.SECRET_KEY, TokenIssuer.ALGORITHM);
+    private String getUserId(String token) {
+        var key = new SecretKeySpec( TokenIssuer.SECRET_KEY, TokenIssuer.ALGORITHM);
         try {
             return Jwts.parser()
                     .verifyWith(key)
@@ -72,6 +85,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     .parseSignedClaims(token)
                     .getPayload()
                     .getSubject();
+
         } catch (Exception e) {
             throw new NotAuthorizedException("Invalid JWT");
         }

@@ -61,56 +61,69 @@ public class PublicationService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createPost(MultipartFormDataInput input) throws IOException {
 
-        String email = securityContext.getUserPrincipal().getName();
+        String user_id = securityContext.getUserPrincipal().getName();
 
-        Publication publication = publicationBean.create(input, email);
+        Publication publication = publicationBean.create(input, user_id);
 
         return Response.status(Response.Status.CREATED).entity(PublicationDTO.from(publication)).build();
     }
 
+    //EP03
     @POST
     @Authenticated
     @Path("/{post_id}/ratings")
-        public Response giveRating(@PathParam("post_id")Long post_id, @Valid RatingDTO ratingDTO) throws MyEntityNotFoundException {
-        String email = securityContext.getUserPrincipal().getName();
+    public Response giveRating(@PathParam("post_id") long post_id, @Valid RatingDTO ratingDTO) throws MyEntityNotFoundException {
+        String user_id = securityContext.getUserPrincipal().getName();
 
-        Rating rating = ratingBean.giveRating(post_id, email, ratingDTO.getRating());
-
-
-        return Response.ok(RatingDTO.from(rating)).build();
-    }
-
-    @POST
-    @Authenticated
-    @Path("/{post_id}/comments")
-    public Response createComment(@PathParam("post_id")Long post_id, @Valid CommentDTO commentDTO) throws MyEntityNotFoundException {
-        String email = securityContext.getUserPrincipal().getName();
-
-        Publication publication = publicationBean.findWithComments(post_id);
-
-        commentBean.create(publication, email, commentDTO);
-
-
-        PublicationWithCommentsDTO dto = PublicationWithCommentsDTO.from(publication);
-
-        return Response.ok(dto).build();
-    }
-
-
-    @POST
-    @Authenticated
-    @Path("/{post_id}/tags")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response associateTag(@PathParam("post_id")Long post_id, TagDTO tags) throws MyEntityNotFoundException {
-
-        tagBean.associateTagToPublication(tags, post_id);
+        ratingBean.giveRating(post_id, user_id, ratingDTO.getRating());
 
         Publication publication = publicationBean.findWithTags(post_id);
 
         return Response.ok(PublicationDTO.from(publication)).build();
     }
 
+    //EP04
+    @POST
+    @Authenticated
+    @Path("/{post_id}/comments")
+    public Response createComment(@PathParam("post_id") long post_id, @Valid CommentDTO commentDTO) throws MyEntityNotFoundException {
+        String user_id = securityContext.getUserPrincipal().getName();
+
+        Publication publication = publicationBean.findWithComments(post_id);
+
+        Comment comment = commentBean.create(publication, user_id, commentDTO.getComment());
 
 
+        CommentDTO dto = CommentDTO.from(comment);
+
+        return Response.ok(dto).build();
+    }
+
+    //EP06
+    @POST
+    @Authenticated
+    @Path("/{post_id}/tags")
+    public Response associateTag(@PathParam("post_id") long post_id, TagRequestDTO tags) throws MyEntityNotFoundException {
+
+
+        tagBean.associateTagToPublication(tags, post_id);
+        Publication publication = publicationBean.findWithTags(post_id);
+
+        var publicationDTO = PublicationDTO.from(publication);
+        publicationDTO.setTags(TagDTO.from(publication.getTags()));
+        return Response.ok(publicationDTO).build();
+    }
+    //EP18
+    @DELETE
+    @Authenticated
+    @Path("/{post_id}/tags")
+    public Response disassociateTag(@PathParam("post_id") long post_id, TagRequestDTO tags) throws MyEntityNotFoundException {
+
+
+        tagBean.dissociateTagsFromPublication(tags, post_id);
+        Publication publication = publicationBean.findWithTags(post_id);
+        var publicationDTO = PublicationDTO.from(publication);
+        publicationDTO.setTags(TagDTO.from(publication.getTags()));
+        return Response.ok(publicationDTO).build();
+    }
 }

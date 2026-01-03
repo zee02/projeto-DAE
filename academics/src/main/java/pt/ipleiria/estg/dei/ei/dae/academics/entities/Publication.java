@@ -1,8 +1,11 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -12,18 +15,41 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(
                 name = "getAllPublicPosts",
-                query = " SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = true ORDER BY p.submissionDate DESC"),
-        @NamedQuery(name = "getMyPosts", query = "SELECT p FROM Publication p WHERE p.author.email = :email ORDER BY p.submissionDate DESC")
+                query = " SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags  ORDER BY p.submissionDate DESC"),
+        @NamedQuery(
+                name = "getMyPostIds",
+                query = """
+                            SELECT DISTINCT p.id, p.submissionDate
+                            FROM Publication p
+                            LEFT JOIN p.tags t
+                            WHERE p.author.email = :email
+                              AND (:isVisible IS NULL OR p.isVisible = :isVisible)
+                              AND (:tagId IS NULL OR t.id = :tagId)
+                            ORDER BY p.submissionDate DESC
+                        """
+        ),
+        @NamedQuery(
+                name = "getMyPostsWithTags",
+                query = """
+                            SELECT DISTINCT p
+                            FROM Publication p
+                            LEFT JOIN FETCH p.tags
+                            WHERE p.id IN :ids
+                            ORDER BY p.createdAt DESC
+                        """
+        )
+
+
 })
 public class Publication implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private long id;
 
-    @Column(nullable = false)
+    @NotBlank
     private String title;
 
-    @Column(nullable = false)
+    @NotBlank
     private String scientificArea;
 
     @Lob // Para textos longos
@@ -37,7 +63,7 @@ public class Publication implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date submissionDate;
 
-    // Métricas para ordenação (EP10)
+
     private double averageRating;
     private int ratingsCount;
     private int commentsCount;
@@ -65,12 +91,17 @@ public class Publication implements Serializable {
     @OneToMany(mappedBy = "publication")
     private List<Rating> ratings; // Nova entidade Rating necessária
 
+
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+
     public Publication() {
         this.tags = new ArrayList<>();
         this.comments = new ArrayList<>();
         this.ratings = new ArrayList<>();
         this.submissionDate = new Date();
-
+        this.createdAt = new Timestamp(new Date().getTime());
+        this.updatedAt = null;
     }
 
     public Publication(String title, String scientificArea, boolean isVisible, String summary, String filePath, User author) {
@@ -86,20 +117,18 @@ public class Publication implements Serializable {
         this.ratings = new ArrayList<>();
         this.submissionDate = new Date();
 
+        this.createdAt = new Timestamp(new Date().getTime());
+        this.updatedAt = null;
+
     }
 
-    // Métodos Auxiliares
-    public void addTag(Tag tag) {
-        if (!tags.contains(tag)) {
-            tags.add(tag);
-        }
-    }
 
-    public Long getId() {
+
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -206,4 +235,62 @@ public class Publication implements Serializable {
     public void setRatings(List<Rating> ratings) {
         this.ratings = ratings;
     }
+
+    public void addRating(Rating rating) {
+        this.ratings.add(rating);
+    }
+
+
+    public void recalculateRatings() {
+        if (ratings == null || ratings.isEmpty()) {
+            this.averageRating = 0;
+            this.ratingsCount = 0;
+            return;
+        }
+
+        this.ratingsCount = ratings.size();
+
+        double sum = ratings.stream().mapToDouble(Rating::getScore).sum();
+
+        this.averageRating = sum / this.ratingsCount;
+    }
+
+
+    public void recalculateComments() {
+        if (comments == null || comments.isEmpty()) {
+            this.commentsCount = 0;
+            return;
+        }
+
+        this.commentsCount = comments.size();
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    // Métodos Auxiliares
+    public void addTag(Tag tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+        }
+    }
+
+    public void removeTag(Tag tag) {
+        this.tags.remove(tag);
+    }
+
+
 }

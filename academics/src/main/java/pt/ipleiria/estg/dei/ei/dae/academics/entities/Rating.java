@@ -19,7 +19,7 @@ import java.io.Serializable;
 public class Rating implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private long id;
 
     private Integer score;
 
@@ -42,11 +42,11 @@ public class Rating implements Serializable {
 
 
     // Getters/Setters básicos
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

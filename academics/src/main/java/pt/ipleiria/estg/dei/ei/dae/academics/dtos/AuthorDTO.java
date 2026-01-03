@@ -4,7 +4,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
 import java.io.Serializable;
 
 public class AuthorDTO implements Serializable {
-    private Long id;
+    private long id;
     private String name;
 
     public static AuthorDTO from(User user) {
@@ -14,6 +14,6 @@ public class AuthorDTO implements Serializable {
         return dto;
     }
 
-    public Long getId() { return id; }
+    public long getId() { return id; }
     public String getName() { return name; }
 }

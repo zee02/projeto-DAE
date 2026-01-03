@@ -27,25 +27,19 @@ public class AuthService {
 
     @Context
     private SecurityContext securityContext;
+
     @POST
     @Path("/login")
     public Response authenticate(@Valid AuthDTO auth) {
 
-        if (!userBean.canLogin(auth.getEmail(), auth.getPassword())) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Invalid credentials")
-                    .build();
+        User user = userBean.canLogin(auth.getEmail(), auth.getPassword());
+
+        if (user == null) {
+            return Response.status(Response.Status.UNAUTHORIZED) .entity("Invalid credentials").build();
         }
 
-        String token = TokenIssuer.issue(auth.getEmail());
-        User user = userBean.find(auth.getEmail());
-
-        AuthResponseDTO response =
-                new AuthResponseDTO(
-                        "Autenticação bem-sucedida",
-                        token,
-                        user
-                );
+        String token = TokenIssuer.issue(String.valueOf(user.getId()));
+        AuthResponseDTO response = new AuthResponseDTO("Autenticação bem-sucedida", token, user);
 
         return Response.ok(response).build();
     }
@@ -74,8 +68,8 @@ public class AuthService {
     @Authenticated
     @Path("/user")
     public Response getAuthenticatedUser() {
-        var username = securityContext.getUserPrincipal().getName();
-        var user = userBean.find(username);
+        String id = securityContext.getUserPrincipal().getName();
+        var user = userBean.find(id);
         return Response.ok(UserDTO.from(user)).build();
     }
 }

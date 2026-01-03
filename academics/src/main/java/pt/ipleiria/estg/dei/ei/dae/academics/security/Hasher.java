@@ -1,10 +1,11 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.security;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 public class Hasher {
     private static final int ITERATIONS = 65536; // recommended >= 50k
     private static final int KEY_LENGTH = 256; // bits

@@ -4,6 +4,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Hasher;
 import java.util.List;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,7 +14,18 @@ public class UserBean {
     @PersistenceContext
     private EntityManager em;
 
-    public User find(String email) {
+
+    public User find(String id) {
+        try {
+            return em.createNamedQuery("findUser", User.class)
+                    .setParameter("id",  Long.parseLong(id))
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public User findByEmail(String email) {
         try {
             return em.createNamedQuery("findUserByEmail", User.class)
                     .setParameter("email", email)
@@ -25,42 +37,21 @@ public class UserBean {
 
     // OBRIGATORIO: Retorno e do tipo 'User'
     public User findOrFail(String email) {
-        User user = find(email);
+        User user = findByEmail(email);
         if (user == null) {
             throw new IllegalArgumentException("User not found with email: " + email);
         }
         return user;
     }
 
-    public boolean canLogin(String email, String password) {
-        User user = find(email);
-        return user != null && Hasher.verify(password, user.getPassword());
-    }
+    public User canLogin(String email, String password) {
+        User user = findByEmail(email);
 
-    public User create(String password, String name, String email, String role) {
-        User user = find(email);
-        if (user != null) {
-            throw new IllegalArgumentException("User already exists with email: " + email);
+        if (user != null && Hasher.verify(password, user.getPassword())) {
+            return user;
         }
 
-        String hashedPassword = Hasher.hash(password);
-
-        switch (role) {
-            case "Administrador":
-                user = new Administrator(email, hashedPassword, name);
-                break;
-            case "Responsável":
-                user = new Responsible(email, hashedPassword, name);
-                break;
-            case "Colaborador":
-                user = new Collaborator(email, hashedPassword, name);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid Role: " + role);
-        }
-
-        em.persist(user);
-        return user;
+        return null;
     }
 
     public void deactivate(long userId) throws EntityNotFoundException {

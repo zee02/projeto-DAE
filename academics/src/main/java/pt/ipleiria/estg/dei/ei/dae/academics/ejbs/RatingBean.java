@@ -37,7 +37,7 @@ public class RatingBean {
     @EJB
     private UserBean userBean;
 
-    public Rating find(Long postId, User user) {
+    public Rating find(long postId, User user) {
 
         List<Rating> results = em.createNamedQuery(
                         "findRatingByPublicationAndUser",
@@ -51,15 +51,15 @@ public class RatingBean {
     }
 
 
-    public Rating giveRating(Long postId, String email, Integer score) throws MyEntityNotFoundException {
+    public Rating giveRating(long postId, String user_id, Integer score) throws MyEntityNotFoundException {
 
-        User user = userBean.find(email);
+        User user = userBean.find(user_id);
 
         Rating existentRating = this.find(postId, user);
-
+        Publication publication = publicationBean.findWithTags(postId);
         Rating newRating;
         if (existentRating == null) {
-            Publication publication = publicationBean.findWithRatings(postId);
+
 
             if (publication == null) {
                 throw new MyEntityNotFoundException( "Publication with id " + postId + " not found");
@@ -69,12 +69,28 @@ public class RatingBean {
             newRating.setUser(user);
             newRating.setPublication(publication);
             newRating.setScore(score);
+
+            publication.addRating(newRating);
+
             em.persist(newRating);
+
+            // atualizar métricas da publicação
+            publication.recalculateRatings();
+            em.merge(publication);
+
             return newRating;
         } else {
             existentRating.setScore(score);
             em.merge(existentRating);
+
+            //recalcular métricas
+            publication.recalculateRatings();
+            em.merge(publication);
+
             return existentRating;
         }
+
+
+
     }
 }

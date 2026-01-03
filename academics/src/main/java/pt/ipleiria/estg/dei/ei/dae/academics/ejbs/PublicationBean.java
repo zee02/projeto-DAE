@@ -9,6 +9,8 @@ import jakarta.ws.rs.core.Response;
 import org.hibernate.Hibernate;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
@@ -32,28 +34,26 @@ public class PublicationBean {
 
     private static final String UPLOAD_DIR = "/tmp/uploads";
 
-    public void create(String title, String scientificArea, String authorEmail) {
+    public Publication create(String title, String scientificArea, String authorEmail) {
 
 
         User author = userBean.findOrFail(authorEmail);
 
-        Publication publication = new Publication(title, scientificArea, true,"Resumo AI", "file", author);
+        Publication publication = new Publication(title, scientificArea, true, "Resumo AI", "file", author);
 
         em.persist(publication);
+
+        return publication;
     }
 
 
-
-    public Publication create(MultipartFormDataInput input, String authorEmail) throws IOException {
+    public Publication create(MultipartFormDataInput input, String user_id) throws IOException {
 
         Map<String, List<InputPart>> formParts = input.getFormDataMap();
 
 
-        if (!formParts.containsKey("title") || !formParts.containsKey("scientific_area") ||  !formParts.containsKey("file")) {
-            throw new WebApplicationException(
-                    "Missing required fields",
-                    Response.Status.BAD_REQUEST
-            );
+        if (!formParts.containsKey("title") || !formParts.containsKey("scientific_area") || !formParts.containsKey("file")) {
+            throw new WebApplicationException("Missing required fields", Response.Status.BAD_REQUEST);
         }
 
         String title = formParts.get("title").get(0).getBodyAsString();
@@ -68,7 +68,7 @@ public class PublicationBean {
         String fileName = PublicationUtils.getFileName(filePart.getHeaders());
         InputStream fileData = filePart.getBody(InputStream.class, null);
 
-        User author = userBean.findOrFail(authorEmail);
+        User author = userBean.find(user_id);
 
         // Guardar ficheiro
         String uniqueFileName = UUID.randomUUID() + "_" + fileName;
@@ -81,7 +81,7 @@ public class PublicationBean {
             summary = "Resumo pendente de geração automática.";
         }
 
-        Publication publication = new Publication(title, area, false,summary, path.toString(), author);
+        Publication publication = new Publication(title, area, false, summary, path.toString(), author);
 
         em.persist(publication);
         return publication;
@@ -92,25 +92,56 @@ public class PublicationBean {
         return em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
     }
 
-    public Publication findWithTags(Long id) {
+    public Publication findWithTags(long id) {
         Publication p = em.find(Publication.class, id);
         Hibernate.initialize(p.getTags());
         return p;
     }
 
-    public Publication findWithRatings(Long id) {
+
+    public Publication findWithComments(long id) {
         Publication p = em.find(Publication.class, id);
-        Hibernate.initialize(p.getRatings());
+
+        Hibernate.initialize(p.getComments());
+
+
         return p;
     }
 
 
-    public Publication findWithComments(Long id) {
-        Publication p = em.find(Publication.class, id);
+    public List<PublicationDTO> findMyPublications(String userId, int page, int limit, Boolean isVisible, Long tagId) {
+        User user = userBean.find(userId);
 
-        Hibernate.initialize(p.getComments()); // se precisares
+        List<Long> ids = em.createNamedQuery("getMyPostIds", Object[].class)
+                .setParameter("email", user.getEmail())
+                .setParameter("isVisible", isVisible)
+                .setParameter("tagId", tagId)
+                .setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList()
+                .stream()
+                .map(r -> (Long) r[0])
+                .toList();
 
-        return p;
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+
+        return em.createNamedQuery("getMyPostsWithTags", Publication.class)
+                .setParameter("ids", ids)
+                .getResultList()
+                .stream()
+                .map(p -> {
+                    PublicationDTO dto = PublicationDTO.from(p);
+                    dto.setTags(
+                            p.getTags().stream()
+                                    .map(TagDTO::from)
+                                    .toList()
+                    );
+                    return dto;
+                })
+                .toList();
     }
+
 
 }

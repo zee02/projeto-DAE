@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -19,7 +20,7 @@ import java.util.Date;
 public class Comment implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private long id;
 
     @Column(nullable = false)
     private String content;
@@ -30,8 +31,10 @@ public class Comment implements Serializable {
     @ManyToOne
     private Publication publication;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Instant createdAt;
+
+    private Date createdAt;
+
+    private Date updatedAt;
 
     public Comment() {
     }
@@ -40,15 +43,15 @@ public class Comment implements Serializable {
         this.content = content;
         this.author = author;
         this.publication = publication;
-        this.createdAt = Instant.now();
+        this.createdAt = new Date();
     }
 
     // Getters e Setters
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -76,11 +79,19 @@ public class Comment implements Serializable {
         this.publication = publication;
     }
 
-    public Instant getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

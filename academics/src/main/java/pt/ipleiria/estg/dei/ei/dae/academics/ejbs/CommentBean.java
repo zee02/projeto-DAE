@@ -12,6 +12,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 
@@ -26,7 +27,7 @@ public class CommentBean {
     @EJB
     private UserBean userBean;
 
-    public Comment findByPublication(Long publicationId) {
+    public Comment findByPublication(long publicationId) {
 
         List<Comment> results = em.createNamedQuery(
                         "findCommentsByPublication",
@@ -39,17 +40,20 @@ public class CommentBean {
     }
 
 
-    public Comment create(Publication publication, String email, CommentDTO comment) throws MyEntityNotFoundException {
-        User user = userBean.find(email);
+    public Comment create(Publication publication, String user_id, String comment)  {
+
+
+        User user = userBean.find(user_id);
 
         Comment newComent = new Comment();
         newComent.setAuthor(user);
-        newComent.setContent(comment.getComment());
+        newComent.setContent(comment);
         newComent.setPublication(publication);
-        newComent.setCreatedAt(Instant.now());
+        newComent.setCreatedAt(new Date());
 
         publication.getComments().add(newComent);
-        em.merge(newComent);
+        em.persist(newComent);
+
         return newComent;
 
     }

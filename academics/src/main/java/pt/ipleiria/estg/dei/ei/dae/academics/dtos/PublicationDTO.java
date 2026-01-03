@@ -1,45 +1,35 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.dtos;
 
 import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTransient;
+import org.hibernate.Hibernate;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PublicationDTO implements Serializable {
 
-    private Long id;
+    private long id;
     private String title;
-
-    @JsonbProperty("scientific_area")
     private String scientificArea;
-
     private String summary;
-
-    @JsonbProperty("is_visible")
     private boolean visible;
-
-    @JsonbProperty("file_url")
     private String fileUrl;
-
     private AuthorDTO author;
-
-    @JsonbProperty("average_rating")
     private double averageRating;
-
-    @JsonbProperty("ratings_count")
     private int ratingsCount;
-
-    private List<String> tags;
-
-    @JsonbProperty("created_at")
-    private String createdAt;
-
+    private List<TagDTO> tags;
     private List<CommentDTO> comments;
+    private Timestamp createdAt;
+    private Timestamp updatedAt;
+
 
     public static List<PublicationDTO> from(List<Publication> publications) {
         return publications.stream()
@@ -58,30 +48,16 @@ public class PublicationDTO implements Serializable {
         dto.author = AuthorDTO.from(p.getAuthor());
         dto.averageRating = p.getAverageRating();
         dto.ratingsCount = p.getRatingsCount();
-
-        dto.tags = p.getTags() == null
-                ? List.of()
-                : p.getTags().stream()
-                .map(Tag::getName)   // ⚠️ ajusta ao getter real
-                .collect(Collectors.toList());
-        dto.comments = p.getComments() == null
-                ? List.of()
-                : p.getComments()
-                .stream()
-                .map(CommentDTO::from)
-                .collect(Collectors.toList());
-
-        dto.createdAt = p.getSubmissionDate()
-                .toInstant()
-                .atOffset(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_INSTANT);
+        dto.tags = new LinkedList<>();
+        dto.createdAt = p.getCreatedAt();
+        dto.updatedAt = p.getUpdatedAt();
 
         return dto;
     }
 
     /* getters JavaBeans */
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
@@ -117,15 +93,32 @@ public class PublicationDTO implements Serializable {
         return ratingsCount;
     }
 
-    public List<String> getTags() {
+    public List<TagDTO> getTags() {
         return tags;
     }
-    public List<CommentDTO> getComments() {
-        return comments;
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
     }
-    public String getCreatedAt() {
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Timestamp getCreatedAt() {
         return createdAt;
     }
 
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public List<CommentDTO> getComments() {
+        return comments;
+    }
+
+    public void setTags(List<TagDTO> tags) {
+        this.tags = tags;
+    }
 
 }

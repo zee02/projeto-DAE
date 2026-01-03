@@ -9,15 +9,21 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @NamedQueries({
         @NamedQuery(name = "getAllUsers", query = "SELECT u FROM User u ORDER BY u.name"),
-        @NamedQuery(name = "findUserByEmail", query = "SELECT u FROM User u WHERE u.email = :email")
+        @NamedQuery(name = "findUserByEmail", query = "SELECT u FROM User u WHERE u.email = :email"),
+        @NamedQuery(name = "findUser", query = "SELECT u FROM User u WHERE u.id = :id")
 })
+@DiscriminatorColumn(
+        name = "dtype",
+        discriminatorType = DiscriminatorType.STRING
+)
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @Column(unique = true, nullable = false)
+    private long id;
 
     @NotNull
     @Email
@@ -30,8 +36,6 @@ public class User implements Serializable {
     @NotNull
     private String name;
 
-    @NotNull
-    private String role;
 
     // Novo campo para resolver o erro setActive
     private boolean active = true;
@@ -45,25 +49,24 @@ public class User implements Serializable {
     public User() {
     }
 
-    public User(String email, String password, String name, String role) {
+    public User(String email, String password, String name) {
         this.email = email;
         this.password = password;
         this.name = name;
-        this.role = role;
         this.active = true;
     }
 
     // Método auxiliar para compatibilidade com TokenIssuer
-    public String getUsername() {
-        return this.email;
+    public String getIdAsString() {
+        return String.valueOf(this.id);
     }
 
     // Getters e Setters
-    public Long getId() {
-        return id;
+    public long getId() {
+        return this.id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -91,13 +94,6 @@ public class User implements Serializable {
         this.name = name;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
 
     // O método que estava a faltar nos Beans
     public boolean isActive() {
