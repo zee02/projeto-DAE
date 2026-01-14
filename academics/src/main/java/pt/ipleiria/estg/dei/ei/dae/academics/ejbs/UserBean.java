@@ -53,7 +53,23 @@ public class UserBean {
 
         return null;
     }
+    public void delete(long id) {
+        User user = em.find(User.class, id);
 
+        if (user == null) {
+            throw new EntityNotFoundException("User not found");
+        }
+
+        em.remove(user);
+    }
+
+
+
+    public void activate(long userId) throws EntityNotFoundException {
+        User u = em.find(User.class, userId);
+        if (u == null) throw new EntityNotFoundException();
+        u.setActive(true);
+    }
     public void deactivate(long userId) throws EntityNotFoundException {
         User u = em.find(User.class, userId);
         if (u == null) throw new EntityNotFoundException();

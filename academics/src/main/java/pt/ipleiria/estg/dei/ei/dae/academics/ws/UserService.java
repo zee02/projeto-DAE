@@ -94,12 +94,37 @@ public class UserService {
             return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
         }
     }
+    // EP27 - Apagar utilizador (Hard delete)
 
+    @DELETE
+    @Path("/{user_id}")
+    @RolesAllowed({"Administrador"})
+    public Response deleteUser(@PathParam("user_id") long userId) {
+        try {
+            userBean.delete(userId);
+            return Response.noContent().build(); // 204
+        } catch (EntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    // EP25 - Desativar utilizador (Soft delete)
+    @PUT
+    @Path("/{user_id}/activate")
+    @RolesAllowed({"Administrador"})
+    public Response activateUser(@PathParam("user_id") long userId) {
+        try {
+            userBean.activate(userId);
+            return Response.ok("{\"message\": \"Utilizador ativado com sucesso\", \"status\": \"active\"}").build();
+        } catch (EntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).build(); // [cite: 836]
+        }
+    }
 
     // EP26 - Desativar utilizador (Soft delete)
     @PUT
     @Path("/{user_id}/deactivate")
-    @RolesAllowed({"Administrator"})
+    @RolesAllowed({"Administrador"})
     public Response deactivateUser(@PathParam("user_id") long userId) {
         try {
             userBean.deactivate(userId);
@@ -108,6 +133,8 @@ public class UserService {
             return Response.status(Response.Status.NOT_FOUND).build(); // [cite: 836]
         }
     }
+
+
 
     //EP07
     @GET

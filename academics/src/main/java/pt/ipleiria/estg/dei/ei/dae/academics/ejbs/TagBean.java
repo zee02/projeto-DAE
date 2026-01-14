@@ -27,14 +27,14 @@ public class TagBean {
     @EJB
     private UserBean userBean;
 
-    public Tag findAll() {
+    public List<Tag> findAll() {
 
         List<Tag> results = em.createNamedQuery(
                 "findAllTags",
                 Tag.class
         ).getResultList();
 
-        return results.isEmpty() ? null : results.get(0);
+        return results.isEmpty() ? null : results;
     }
 
 
