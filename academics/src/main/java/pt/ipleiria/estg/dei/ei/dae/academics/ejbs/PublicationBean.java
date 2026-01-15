@@ -4,6 +4,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.hibernate.Hibernate;
@@ -20,6 +21,8 @@ import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -143,5 +146,41 @@ public class PublicationBean {
                 .toList();
     }
 
+    // EP02 - Corrigir resumo gerado por IA
+    public Publication updateSummary(long postId, String userId, String newSummary) throws MyEntityNotFoundException {
+        Publication publication = em.find(Publication.class, postId);
 
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
+        }
+
+        User user = userBean.find(userId);
+
+        // Verificar se o utilizador é o autor da publicação
+        if (publication.getAuthor().getId() != user.getId()) {
+            throw new ForbiddenException("Utilizador não é o autor da publicação");
+        }
+
+        publication.setSummary(newSummary);
+        publication.setUpdatedAt(new Timestamp(new Date().getTime()));
+
+        return publication;
+    }
+
+    // EP10 - Ordenar lista de publicações
+    public List<Publication> getAllPublicSorted(String sortBy, String order) {
+        // Mapear campo do DTO para campo da entidade
+        String fieldName = switch (sortBy) {
+            case "average_rating" -> "averageRating";
+            case "comments_count" -> "commentsCount";
+            case "ratings_count" -> "ratingsCount";
+            default -> "averageRating";
+        };
+
+        String orderDirection = order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
+
+        String jpql = "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = true ORDER BY p." + fieldName + " " + orderDirection;
+
+        return em.createQuery(jpql, Publication.class).getResultList();
+    }
 }

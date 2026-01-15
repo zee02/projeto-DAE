@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CollaboratorDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UpdateUserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
@@ -148,5 +149,16 @@ public class UserService {
 
 
         return Response.ok(publications).build();
+    }
+
+    //EP13 - Editar dados pessoais
+    @PATCH
+    @Path("/me")
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    public Response updatePersonalData(@Valid UpdateUserDTO dto) {
+        String user_id = securityContext.getUserPrincipal().getName();
+
+        User updatedUser = userBean.updatePersonalData(user_id, dto.getName(), dto.getEmail());
+        return Response.ok(UserDTO.from(updatedUser)).build();
     }
 }

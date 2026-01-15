@@ -79,4 +79,29 @@ public class UserBean {
     public List<User> findAll() {
         return em.createNamedQuery("getAllUsers", User.class).getResultList();
     }
+
+    // EP13 - Editar dados pessoais
+    public User updatePersonalData(String userId, String name, String email) {
+        User user = find(userId);
+
+        if (user == null) {
+            throw new EntityNotFoundException("Utilizador não encontrado");
+        }
+
+        // Atualizar apenas os campos que foram fornecidos
+        if (name != null && !name.isBlank()) {
+            user.setName(name);
+        }
+
+        if (email != null && !email.isBlank()) {
+            // Verificar se o email já existe (e não é do próprio utilizador)
+            User existingUser = findByEmail(email);
+            if (existingUser != null && existingUser.getId() != user.getId()) {
+                throw new MyEntityExistsException("Email já está em uso por outro utilizador");
+            }
+            user.setEmail(email);
+        }
+
+        return user;
+    }
 }

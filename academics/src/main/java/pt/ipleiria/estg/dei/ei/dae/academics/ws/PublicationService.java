@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.ws;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.persistence.NoResultException;
 import jakarta.validation.Valid;
@@ -125,5 +126,42 @@ public class PublicationService {
         var publicationDTO = PublicationDTO.from(publication);
         publicationDTO.setTags(TagDTO.from(publication.getTags()));
         return Response.ok(publicationDTO).build();
+    }
+
+    //EP02 - Corrigir resumo gerado por IA
+    @PATCH
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Path("/{post_id}/summary")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateSummary(@PathParam("post_id") long post_id, @Valid SummaryDTO summaryDTO) throws MyEntityNotFoundException {
+        String user_id = securityContext.getUserPrincipal().getName();
+
+        Publication publication = publicationBean.updateSummary(post_id, user_id, summaryDTO.getSummary());
+
+        return Response.ok(PublicationDTO.from(publication)).build();
+    }
+
+    //EP10 - Ordenar lista de publicações
+    @POST
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Path("/sort")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response getSortedPublications(@Valid SortRequestDTO sortRequest) {
+        List<Publication> publications = publicationBean.getAllPublicSorted(
+                sortRequest.getSort_by(),
+                sortRequest.getOrder()
+        );
+
+        List<PublicationDTO> dtos = publications.stream()
+                .map(p -> {
+                    PublicationDTO dto = PublicationDTO.from(p);
+                    dto.setTags(TagDTO.from(p.getTags()));
+                    return dto;
+                })
+                .toList();
+
+        return Response.ok(dtos).build();
     }
 }

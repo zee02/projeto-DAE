@@ -16,9 +16,8 @@ public class MyEntityExistsExceptionMapper implements ExceptionMapper<MyEntityEx
     public Response toResponse(MyEntityExistsException e) {
         String errorMsg = e.getMessage();
         logger.warning("ERROR: " + errorMsg);
-        return Response.status(Response.Status.CONFLICT)
+        return Response.status(Response.Status.BAD_REQUEST)
                 .entity(errorMsg)
                 .build();
     }
 }
-
