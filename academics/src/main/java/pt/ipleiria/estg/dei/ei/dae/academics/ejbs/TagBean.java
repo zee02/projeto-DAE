@@ -37,14 +37,31 @@ public class TagBean {
         return results.isEmpty() ? null : results;
     }
 
+    public Tag findByName(String name) {
+        try {
+            return em.createQuery("SELECT t FROM Tag t WHERE t.name = :name", Tag.class)
+                    .setParameter("name", name)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 
-    public Tag create(String nomeTag) throws IllegalArgumentException {
+    // EP16 - Criar nova tag
+    public Tag create(String nomeTag) throws MyEntityExistsException {
 
         if (nomeTag == null || nomeTag.trim().isEmpty()) {
             throw new IllegalArgumentException("O nome da tag não pode ser vazio");
         }
+
+        // Verificar se já existe uma tag com esse nome
+        Tag existingTag = findByName(nomeTag.trim());
+        if (existingTag != null) {
+            throw new MyEntityExistsException("Já existe uma tag com o nome: " + nomeTag);
+        }
+
         Tag newTag = new Tag();
-        newTag.setName(nomeTag);
+        newTag.setName(nomeTag.trim());
         em.persist(newTag);
         return newTag;
     }
