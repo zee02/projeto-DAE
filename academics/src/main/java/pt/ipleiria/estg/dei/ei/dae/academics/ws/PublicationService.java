@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -148,5 +149,23 @@ public class PublicationService {
         var publicationDTO = PublicationDTO.from(publication);
         publicationDTO.setTags(TagDTO.from(publication.getTags()));
         return Response.ok(publicationDTO).build();
+    }
+
+    //EP20 - Ocultar ou mostrar publicação
+    @PUT
+    @Authenticated
+    @RolesAllowed({"Responsavel", "Administrador"})
+    @Path("/{post_id}/visibility")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateVisibility(@PathParam("post_id") long post_id, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
+        Publication publication = publicationBean.updateVisibility(post_id, dto.getVisible());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Visibilidade da publicação atualizada com sucesso");
+        response.put("post_id", publication.getId());
+        response.put("visible", publication.isVisible());
+        response.put("updated_at", publication.getUpdatedAt());
+
+        return Response.ok(response).build();
     }
 }

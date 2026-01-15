@@ -183,4 +183,18 @@ public class PublicationBean {
 
         return em.createQuery(jpql, Publication.class).getResultList();
     }
+
+    // EP20 - Ocultar ou mostrar publicação
+    public Publication updateVisibility(long postId, boolean visible) throws MyEntityNotFoundException {
+        Publication publication = em.find(Publication.class, postId);
+
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
+        }
+
+        publication.setVisible(visible);
+        publication.setUpdatedAt(new Timestamp(new Date().getTime()));
+
+        return publication;
+    }
 }
