@@ -12,6 +12,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CollaboratorDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UpdateUserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.RoleDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
@@ -19,7 +20,9 @@ import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 import jakarta.persistence.EntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Path("users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -160,5 +163,24 @@ public class UserService {
 
         User updatedUser = userBean.updatePersonalData(user_id, dto.getName(), dto.getEmail());
         return Response.ok(UserDTO.from(updatedUser)).build();
+    }
+
+    //EP27 - Alterar o papel (role) de um utilizador
+    @PUT
+    @Path("/{user_id}/role")
+    @RolesAllowed({"Administrador"})
+    public Response updateUserRole(@PathParam("user_id") long userId, @Valid RoleDTO dto) {
+        try {
+            User updatedUser = userBean.updateRole(userId, dto.getRole());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Papel do utilizador atualizado com sucesso");
+            response.put("user_id", updatedUser.getId());
+            response.put("new_role", dto.getRole());
+
+            return Response.ok(response).build();
+        } catch (EntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        }
     }
 }

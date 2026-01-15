@@ -104,4 +104,40 @@ public class UserBean {
 
         return user;
     }
+
+    // EP27 - Alterar o papel (role) de um utilizador
+    public User updateRole(long userId, String newRole) {
+        User user = em.find(User.class, userId);
+
+        if (user == null) {
+            throw new EntityNotFoundException("Utilizador não encontrado");
+        }
+
+        // O JPA com SINGLE_TABLE inheritance não permite mudar o tipo diretamente
+        // Precisamos criar um novo utilizador do tipo correto e copiar os dados
+
+        String currentType = user.getClass().getSimpleName();
+        String targetType = switch (newRole) {
+            case "Colaborador" -> "Collaborator";
+            case "Responsavel" -> "Responsible";
+            case "Administrador" -> "Administrator";
+            default -> throw new IllegalArgumentException("Role inválido: " + newRole);
+        };
+
+        // Se já é do tipo correto, não precisa fazer nada
+        if (currentType.equals(targetType)) {
+            return user;
+        }
+
+        // Atualizar o dtype diretamente na base de dados
+        em.createNativeQuery("UPDATE users SET dtype = :dtype WHERE id = :id")
+                .setParameter("dtype", targetType)
+                .setParameter("id", userId)
+                .executeUpdate();
+
+        em.flush();
+        em.clear(); // Limpar cache para recarregar
+
+        return em.find(User.class, userId);
+    }
 }
