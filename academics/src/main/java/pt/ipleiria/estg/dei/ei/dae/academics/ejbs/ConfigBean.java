@@ -6,7 +6,6 @@ import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CommentDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagRequestDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Collaborator;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Responsible;
