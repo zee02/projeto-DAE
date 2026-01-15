@@ -114,7 +114,7 @@ public class ConfigBean {
             tagBean.create("DAE");
             tagBean.create("REST");
 
-            TagRequestDTO tags = new TagRequestDTO();
+            TagDTO tags = new TagDTO();
             ArrayList<Long> tagsIds = new ArrayList<>();
             tagsIds.add(1L);
             tagsIds.add(2L);

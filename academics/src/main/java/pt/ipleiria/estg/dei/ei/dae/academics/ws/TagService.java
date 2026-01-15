@@ -36,7 +36,7 @@ public class TagService {
     // EP16 - Criar uma nova tag
     @POST
     @RolesAllowed({"Responsavel", "Administrador"})
-    public Response createTag(@Valid CreateTagDTO dto) {
+    public Response createTag(@Valid TagDTO dto) {
         Tag newTag = tagBean.create(dto.getName());
 
         Map<String, Object> response = new HashMap<>();

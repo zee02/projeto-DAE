@@ -1,9 +1,9 @@
 package pt.ipleiria.estg.dei.ei.dae.academics.dtos;
 
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +11,20 @@ import java.util.stream.Collectors;
 public class TagDTO {
 
     private long id;
+
+    @NotBlank(message = "O nome da tag não pode estar vazio")
+    @Size(max = 50, message = "O nome da tag não pode ter mais de 50 caracteres")
     private String name;
+
+    // Para receber lista de IDs de tags (associar/desassociar)
+    private ArrayList<Long> tags;
+
+    public TagDTO() {
+    }
+
+    public TagDTO(String name) {
+        this.name = name;
+    }
 
     public static TagDTO from(Tag tag) {
         TagDTO dto = new TagDTO();
@@ -42,6 +55,11 @@ public class TagDTO {
         this.name = name;
     }
 
+    public ArrayList<Long> getTags() {
+        return tags;
+    }
 
-    /* getters */
+    public void setTags(ArrayList<Long> tags) {
+        this.tags = tags;
+    }
 }

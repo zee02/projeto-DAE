@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 @Path("posts")
-@Produces(MediaType.APPLICATION_JSON)
 public class PublicationService {
     @EJB
     private PublicationBean publicationBean;
@@ -47,35 +46,46 @@ public class PublicationService {
 
     // EP06 - Consultar Públicas
     @GET
-    @Path("/")
     @Authenticated
+    @Produces(MediaType.APPLICATION_JSON)
     public List<PublicationDTO> getAllPublicPosts() {
         return PublicationDTO.from(publicationBean.getAllPublic());
     }
 
-    // EP01 - Criar Publicação (Multipart)
+    //EP10 - Ordenar lista de publicações
     @POST
-    @Authenticated
-    @Path("/")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createPost(MultipartFormDataInput input) throws IOException {
-        String user_id = securityContext.getUserPrincipal().getName();
-        Publication publication = publicationBean.create(input, user_id);
-        return Response.status(Response.Status.CREATED).entity(PublicationDTO.from(publication)).build();
-    }
-
-    //EP10 - Ordenar lista de publicações (DEVE VIR ANTES de /{post_id})
-    @POST
+    @Path("/sort")
     @Authenticated
     @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
-    @Path("/sort")
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getSortedPublications(@Valid SortRequestDTO sortRequest) {
-        List<Publication> publications = publicationBean.getAllPublicSorted(
-                sortRequest.getSort_by(),
-                sortRequest.getOrder()
-        );
+    @Consumes("application/json")
+    @Produces("application/json")
+    public Response getSortedPublications(SortRequestDTO sortRequest) {
+        // Validação dos parâmetros
+        String sortBy = sortRequest.getSort_by();
+        String order = sortRequest.getOrder();
+
+        if (sortBy == null || sortBy.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "O campo sort_by não pode estar vazio"))
+                    .build();
+        }
+        if (!sortBy.matches("^(average_rating|comments_count|ratings_count)$")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "sort_by deve ser: average_rating, comments_count ou ratings_count"))
+                    .build();
+        }
+        if (order == null || order.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "O campo order não pode estar vazio"))
+                    .build();
+        }
+        if (!order.matches("^(asc|desc)$")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "order deve ser: asc ou desc"))
+                    .build();
+        }
+
+        List<Publication> publications = publicationBean.getAllPublicSorted(sortBy, order);
 
         List<PublicationDTO> dtos = publications.stream()
                 .map(p -> {
@@ -88,12 +98,24 @@ public class PublicationService {
         return Response.ok(dtos).build();
     }
 
+    // EP01 - Criar Publicação (Multipart)
+    @POST
+    @Authenticated
+    @Consumes("multipart/form-data")
+    @Produces("application/json")
+    public Response createPost(MultipartFormDataInput input) throws IOException {
+        String user_id = securityContext.getUserPrincipal().getName();
+        Publication publication = publicationBean.create(input, user_id);
+        return Response.status(Response.Status.CREATED).entity(PublicationDTO.from(publication)).build();
+    }
+
     //EP02 - Corrigir resumo gerado por IA
     @PATCH
     @Authenticated
     @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
     @Path("/{post_id}/summary")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response updateSummary(@PathParam("post_id") long post_id, @Valid SummaryDTO summaryDTO) throws MyEntityNotFoundException {
         String user_id = securityContext.getUserPrincipal().getName();
         Publication publication = publicationBean.updateSummary(post_id, user_id, summaryDTO.getSummary());
@@ -105,6 +127,7 @@ public class PublicationService {
     @Authenticated
     @Path("/{post_id}/ratings")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response giveRating(@PathParam("post_id") long post_id, @Valid RatingDTO ratingDTO) throws MyEntityNotFoundException {
         String user_id = securityContext.getUserPrincipal().getName();
         ratingBean.giveRating(post_id, user_id, ratingDTO.getRating());
@@ -117,6 +140,7 @@ public class PublicationService {
     @Authenticated
     @Path("/{post_id}/comments")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response createComment(@PathParam("post_id") long post_id, @Valid CommentDTO commentDTO) throws MyEntityNotFoundException {
         String user_id = securityContext.getUserPrincipal().getName();
         Publication publication = publicationBean.findWithComments(post_id);
@@ -130,7 +154,8 @@ public class PublicationService {
     @Authenticated
     @Path("/{post_id}/tags")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response associateTag(@PathParam("post_id") long post_id, TagRequestDTO tags) throws MyEntityNotFoundException {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response associateTag(@PathParam("post_id") long post_id, TagDTO tags) throws MyEntityNotFoundException {
         tagBean.associateTagToPublication(tags, post_id);
         Publication publication = publicationBean.findWithTags(post_id);
         var publicationDTO = PublicationDTO.from(publication);
@@ -143,7 +168,8 @@ public class PublicationService {
     @Authenticated
     @Path("/{post_id}/tags")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response disassociateTag(@PathParam("post_id") long post_id, TagRequestDTO tags) throws MyEntityNotFoundException {
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response disassociateTag(@PathParam("post_id") long post_id, TagDTO tags) throws MyEntityNotFoundException {
         tagBean.dissociateTagsFromPublication(tags, post_id);
         Publication publication = publicationBean.findWithTags(post_id);
         var publicationDTO = PublicationDTO.from(publication);
@@ -157,6 +183,7 @@ public class PublicationService {
     @RolesAllowed({"Responsavel", "Administrador"})
     @Path("/{post_id}/visibility")
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response updateVisibility(@PathParam("post_id") long post_id, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
         Publication publication = publicationBean.updateVisibility(post_id, dto.getVisible());
 
