@@ -22,10 +22,10 @@ public class TagBean {
     private EntityManager em;
 
     @EJB
-    private PublicationBean publicationBean;
+    private UserBean userBean;
 
     @EJB
-    private UserBean userBean;
+    private PublicationBean publicationBean;
 
     public List<Tag> findAll() {
 
@@ -48,7 +48,7 @@ public class TagBean {
     }
 
     // EP16 - Criar nova tag
-    public Tag create(String nomeTag) throws MyEntityExistsException {
+    public Tag create(String nomeTag, String userId) throws MyEntityExistsException {
 
         if (nomeTag == null || nomeTag.trim().isEmpty()) {
             throw new IllegalArgumentException("O nome da tag não pode ser vazio");
@@ -60,8 +60,12 @@ public class TagBean {
             throw new MyEntityExistsException("Já existe uma tag com o nome: " + nomeTag);
         }
 
+        User creator = userBean.find(userId);
+
         Tag newTag = new Tag();
         newTag.setName(nomeTag.trim());
+        newTag.setCreatedBy(creator);
+        newTag.setCreatedAt(new java.util.Date());
         em.persist(newTag);
         em.flush(); // Força a geração do ID imediatamente
         return newTag;

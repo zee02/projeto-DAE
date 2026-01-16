@@ -46,7 +46,8 @@ public class TagService {
     @POST
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response createTag(@Valid TagDTO dto) {
-        Tag newTag = tagBean.create(dto.getName());
+        String userId = securityContext.getUserPrincipal().getName();
+        Tag newTag = tagBean.create(dto.getName(), userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Tag criada com sucesso");
