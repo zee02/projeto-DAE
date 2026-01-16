@@ -176,4 +176,13 @@ public class UserBean {
 
         return user;
     }
+
+    // EP15 - Reset password para "123"
+    public void resetPassword(String email) {
+        User user = findByEmail(email);
+        if (user != null) {
+            user.setPassword(Hasher.hash("123"));
+        }
+        // Não lançar exceção se não encontrar - por segurança não revelamos se email existe
+    }
 }
