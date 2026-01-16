@@ -12,6 +12,10 @@ import java.util.Objects;
         @NamedQuery(
                 name = "findAllTags",
                 query = "SELECT t FROM Tag t "
+        ),
+        @NamedQuery(
+                name = "getHiddenTags",
+                query = "SELECT t FROM Tag t WHERE t.visible = false ORDER BY t.name"
         )
 })
 @Table(name = "tags")
@@ -22,6 +26,8 @@ public class Tag implements Serializable {
 
     @Column(unique = true, nullable = false)
     private String name;
+
+    private boolean visible = true;
 
     @ManyToMany(mappedBy = "tags") // O dono da relação é a Publication
     private List<Publication> publications;
@@ -75,6 +81,14 @@ public class Tag implements Serializable {
 
     public void setSubscribers(List<User> subscribers) {
         this.subscribers = subscribers;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     //equals and hash code gerados nos intelij

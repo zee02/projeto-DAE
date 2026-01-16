@@ -206,4 +206,30 @@ public class TagBean {
         em.remove(tag);
     }
 
+    // Ocultar ou mostrar tag
+    public Tag updateVisibility(long tagId, boolean visible) throws MyEntityNotFoundException {
+        Tag tag = em.find(Tag.class, tagId);
+
+        if (tag == null) {
+            throw new MyEntityNotFoundException("Tag com id " + tagId + " não encontrada");
+        }
+
+        tag.setVisible(visible);
+
+        return tag;
+    }
+
+    // EP21 - Get hidden tags with pagination
+    public List<Tag> getHiddenTags(int page, int limit) {
+        return em.createNamedQuery("getHiddenTags", Tag.class)
+                .setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    public long countHiddenTags() {
+        return em.createQuery("SELECT COUNT(t) FROM Tag t WHERE t.visible = false", Long.class)
+                .getSingleResult();
+    }
+
 }

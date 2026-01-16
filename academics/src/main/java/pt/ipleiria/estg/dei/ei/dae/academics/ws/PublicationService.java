@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 @Path("posts")
+@Produces({MediaType.APPLICATION_JSON})
 public class PublicationService {
     @EJB
     private PublicationBean publicationBean;
