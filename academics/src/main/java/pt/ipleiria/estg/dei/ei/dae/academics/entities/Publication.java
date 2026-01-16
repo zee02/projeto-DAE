@@ -37,9 +37,11 @@ import java.util.List;
                             WHERE p.id IN :ids
                             ORDER BY p.createdAt DESC
                         """
+        ),
+        @NamedQuery(
+                name = "getHiddenPublications",
+                query = "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = false ORDER BY p.updatedAt DESC"
         )
-
-
 })
 public class Publication implements Serializable {
     @Id

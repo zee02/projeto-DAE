@@ -13,6 +13,10 @@ import java.util.Date;
                 name = "findCommentsByPublication",
                 query = "SELECT c FROM Comment c " +
                         "WHERE c.publication.id = :publicationId"
+        ),
+        @NamedQuery(
+                name = "getHiddenComments",
+                query = "SELECT c FROM Comment c LEFT JOIN FETCH c.author WHERE c.visible = false ORDER BY COALESCE(c.updatedAt, c.createdAt) DESC"
         )
 })
 

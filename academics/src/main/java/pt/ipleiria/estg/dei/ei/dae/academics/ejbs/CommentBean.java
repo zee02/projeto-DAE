@@ -98,4 +98,17 @@ public class CommentBean {
 
         return comment;
     }
+
+    // EP21 - Get hidden comments with pagination
+    public List<Comment> getHiddenComments(int page, int limit) {
+        return em.createNamedQuery("getHiddenComments", Comment.class)
+                .setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    public long countHiddenComments() {
+        return em.createQuery("SELECT COUNT(c) FROM Comment c WHERE c.visible = false", Long.class)
+                .getSingleResult();
+    }
 }

@@ -38,11 +38,11 @@ public class CommentDTO {
         CommentDTO dto = new CommentDTO();
         dto.id = p.getId();
         dto.postId = p.getPublication().getId();
-        dto.author = AuthorDTO.from(p.getAuthor());
+        dto.author = p.getAuthor() != null ? AuthorDTO.from(p.getAuthor()) : null;
         dto.comment = p.getContent();
         dto.createdAt = p.getCreatedAt();
         dto.updatedAt = p.getUpdatedAt();
-        dto.visible = true;
+        dto.visible = p.isVisible();
 
         return dto;
     }

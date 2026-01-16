@@ -330,4 +330,17 @@ public class PublicationBean {
                 .getResultList();
     }
 
+    // EP21 - Get hidden publications with pagination
+    public List<Publication> getHiddenPublications(int page, int limit) {
+        return em.createNamedQuery("getHiddenPublications", Publication.class)
+                .setFirstResult((page - 1) * limit)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    public long countHiddenPublications() {
+        return em.createQuery("SELECT COUNT(p) FROM Publication p WHERE p.isVisible = false", Long.class)
+                .getSingleResult();
+    }
+
 }

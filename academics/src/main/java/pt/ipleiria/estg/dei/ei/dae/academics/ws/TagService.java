@@ -103,4 +103,19 @@ public class TagService {
 
         return Response.ok(response).build();
     }
+
+    // Ocultar ou mostrar tag
+    @PUT
+    @Path("/{tag_id}/visibility")
+    @RolesAllowed({"Responsavel", "Administrador"})
+    public Response updateVisibility(@PathParam("tag_id") long tagId, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
+        Tag tag = tagBean.updateVisibility(tagId, dto.getVisible());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Visibilidade da tag atualizada com sucesso");
+        response.put("tag_id", tag.getId());
+        response.put("visible", tag.isVisible());
+
+        return Response.ok(response).build();
+    }
 }
