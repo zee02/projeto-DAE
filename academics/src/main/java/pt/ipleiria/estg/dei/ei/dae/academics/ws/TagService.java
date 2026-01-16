@@ -10,7 +10,10 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.TagBean;
+import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 
 import java.util.HashMap;
@@ -25,6 +28,12 @@ public class TagService {
 
     @EJB
     private TagBean tagBean;
+
+    @EJB
+    private UserBean userBean;
+
+    @Context
+    private SecurityContext securityContext;
 
     // EP32 - Consultar Todas as tags
     @GET
@@ -44,5 +53,41 @@ public class TagService {
         response.put("tag", TagDTO.from(newTag));
 
         return Response.status(Response.Status.CREATED).entity(response).build();
+    }
+
+    // EP11 - Subscrever uma tag
+    @POST
+    @Path("/{tag_id}/subscribe")
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    public Response subscribeToTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
+        String userId = securityContext.getUserPrincipal().getName();
+
+        Tag tag = tagBean.subscribeUserToTag(userId, tagId);
+        User user = userBean.find(userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Tag subscrita com sucesso");
+        response.put("tag", TagDTO.from(tag));
+        response.put("user", UserDTO.from(user));
+
+        return Response.ok(response).build();
+    }
+
+    // Cancelar subscrição de uma tag
+    @DELETE
+    @Path("/{tag_id}/subscribe")
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    public Response unsubscribeFromTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
+        String userId = securityContext.getUserPrincipal().getName();
+
+        Tag tag = tagBean.unsubscribeUserFromTag(userId, tagId);
+        User user = userBean.find(userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Subscrição da tag cancelada com sucesso");
+        response.put("tag", TagDTO.from(tag));
+        response.put("user", UserDTO.from(user));
+
+        return Response.ok(response).build();
     }
 }
