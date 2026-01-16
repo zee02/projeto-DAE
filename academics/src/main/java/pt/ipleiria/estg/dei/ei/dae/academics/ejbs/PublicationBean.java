@@ -42,7 +42,7 @@ public class PublicationBean {
     @EJB
     private UserBean userBean;
 
-    private static final String UPLOAD_DIR = "/tmp/uploads";
+    private static final String UPLOAD_DIR = "/app/uploads";
 
     private final Jsonb jsonb = JsonbBuilder.create();
 
@@ -51,7 +51,7 @@ public class PublicationBean {
 
         User author = userBean.findOrFail(authorEmail);
 
-        Publication publication = new Publication(title, scientificArea, true, "Resumo AI", "file", author);
+        Publication publication = new Publication(title, scientificArea, true, "Resumo AI", "", "", author);
 
         em.persist(publication);
 
@@ -93,7 +93,7 @@ public class PublicationBean {
             summary = "Resumo pendente de geração automática.";
         }
 
-        Publication publication = new Publication(title, area, false, summary, path.toString(), author);
+        Publication publication = new Publication(title, area, false, summary, fileName,uniqueFileName, author);
 
         em.persist(publication);
         return publication;
@@ -342,5 +342,7 @@ public class PublicationBean {
         return em.createQuery("SELECT COUNT(p) FROM Publication p WHERE p.isVisible = false", Long.class)
                 .getSingleResult();
     }
+
+
 
 }

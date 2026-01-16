@@ -57,9 +57,10 @@ public class Publication implements Serializable {
     @Lob // Para textos longos
     private String summary;
 
-    @Column(name = "file_path")
-    private String filePath; // Caminho físico no disco
-
+    @Column(name = "file_name")
+    private String fileName; // Caminho físico no disco
+    @Column(name = "file_key")
+    private String fileKey;
     private boolean isVisible; // Para controlo de visibilidade (EP20)
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -106,12 +107,13 @@ public class Publication implements Serializable {
         this.updatedAt = null;
     }
 
-    public Publication(String title, String scientificArea, boolean isVisible, String summary, String filePath, User author) {
+    public Publication(String title, String scientificArea, boolean isVisible, String summary, String fileName, String fileKey, User author) {
         this();
         this.title = title;
         this.scientificArea = scientificArea;
         this.summary = summary;
-        this.filePath = filePath;
+        this.fileName = fileName;
+        this.fileKey = fileKey;
         this.author = author;
         this.isVisible = isVisible;
         this.tags = new ArrayList<>();
@@ -158,13 +160,22 @@ public class Publication implements Serializable {
         this.summary = summary;
     }
 
-    public String getFilePath() {
-        return filePath;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
+
+    public String getFileKey() {
+        return fileKey;
+    }
+
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
+    }
+
 
     public boolean isVisible() {
         return isVisible;

@@ -27,6 +27,8 @@ services:
       - DB_NAME
       - WILDFLY_ADMIN_PASSWORD
       - POSTGRES_DRIVER_VERSION
+    volumes:
+      - ./uploads:/app/uploads
     depends_on:
       - db
       - smtp

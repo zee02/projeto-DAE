@@ -27,12 +27,15 @@ import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @Path("posts")
 @Produces({MediaType.APPLICATION_JSON})
@@ -311,4 +314,6 @@ public class PublicationService {
 
         return Response.ok(response).build();
     }
+
+
 }
