@@ -185,4 +185,23 @@ public class UserBean {
         }
         // Não lançar exceção se não encontrar - por segurança não revelamos se email existe
     }
+
+    // EP14 - Alterar palavra-passe
+    public User changePassword(String userId, String currentPassword, String newPassword) {
+        User user = find(userId);
+
+        if (user == null) {
+            throw new EntityNotFoundException("Utilizador não encontrado");
+        }
+
+        // Verificar se a palavra-passe atual está correta
+        if (!Hasher.verify(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Palavra-passe atual incorreta");
+        }
+
+        // Atualizar com a nova palavra-passe (hashed)
+        user.setPassword(Hasher.hash(newPassword));
+
+        return user;
+    }
 }

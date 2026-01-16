@@ -14,6 +14,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UpdateUserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.RoleDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.ForgotPasswordDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.ChangePasswordDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
@@ -24,6 +25,7 @@ import jakarta.mail.MessagingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 @Path("users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -237,5 +239,34 @@ public class UserService {
         }
 
         return Response.ok(Map.of("message", "Se existir uma conta associada a este email, enviámos instruções para redefinir a palavra-passe.")).build();
+    }
+
+    // EP14 - Alterar palavra-passe
+    @PATCH
+    @Path("/me/password")
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response changePassword(@Valid ChangePasswordDTO dto) {
+        try {
+            String userId = securityContext.getUserPrincipal().getName();
+
+            userBean.changePassword(userId, dto.getCurrentPassword(), dto.getNewPassword());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Palavra-passe alterada com sucesso");
+            response.put("updated_at", new Date());
+
+            return Response.ok(response).build();
+        } catch (EntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("error", e.getMessage()))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", e.getMessage()))
+                    .build();
+        }
     }
 }
