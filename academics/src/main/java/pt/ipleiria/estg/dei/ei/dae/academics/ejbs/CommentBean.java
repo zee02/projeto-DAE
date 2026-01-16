@@ -57,4 +57,23 @@ public class CommentBean {
         return newComent;
 
     }
+
+    //EP19 - Ocultar ou mostrar comentários de uma publicação
+    public Date updateAllVisibilityByPublication(long postId, boolean visible) throws MyEntityNotFoundException {
+        Publication publication = publicationBean.findWithComments(postId);
+
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
+        }
+
+        Date updatedAt = new Date();
+
+        em.createQuery("UPDATE Comment c SET c.visible = :visible, c.updatedAt = :updatedAt WHERE c.publication.id = :postId")
+                .setParameter("visible", visible)
+                .setParameter("updatedAt", updatedAt)
+                .setParameter("postId", postId)
+                .executeUpdate();
+
+        return updatedAt;
+    }
 }

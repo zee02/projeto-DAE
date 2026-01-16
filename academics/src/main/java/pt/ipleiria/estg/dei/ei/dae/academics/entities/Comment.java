@@ -36,6 +36,8 @@ public class Comment implements Serializable {
 
     private Date updatedAt;
 
+    private boolean visible = true;
+
     public Comment() {
     }
 
@@ -93,5 +95,13 @@ public class Comment implements Serializable {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

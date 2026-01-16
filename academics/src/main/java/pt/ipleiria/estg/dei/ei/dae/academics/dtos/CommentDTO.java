@@ -25,6 +25,7 @@ public class CommentDTO {
     private String comment;
     private Date createdAt;
     private Date updatedAt;
+    private boolean visible;
 
     public static List<CommentDTO> from(List<Comment> comments) {
         return comments.stream()
@@ -41,6 +42,7 @@ public class CommentDTO {
         dto.comment = p.getContent();
         dto.createdAt = p.getCreatedAt();
         dto.updatedAt = p.getUpdatedAt();
+        dto.visible = true;
 
         return dto;
     }
@@ -91,5 +93,13 @@ public class CommentDTO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }
