@@ -106,13 +106,13 @@ public class ConfigBean {
             ratingBean.giveRating(1L, "2", 4);
             ratingBean.giveRating(2L, "4", 5);
 
-            tagBean.create("Java");
-            tagBean.create("Backend");
-            tagBean.create("Frontend");
-            tagBean.create("Bases de Dados");
-            tagBean.create("Engenharia");
-            tagBean.create("DAE");
-            tagBean.create("REST");
+            tagBean.create("Java", "1");
+            tagBean.create("Backend", "1");
+            tagBean.create("Frontend", "1");
+            tagBean.create("Bases de Dados", "1");
+            tagBean.create("Engenharia", "1");
+            tagBean.create("DAE", "1");
+            tagBean.create("REST", "1");
 
             TagDTO tags = new TagDTO();
             ArrayList<Long> tagsIds = new ArrayList<>();

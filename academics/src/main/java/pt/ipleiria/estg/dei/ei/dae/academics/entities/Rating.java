@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @NamedQueries({
@@ -29,13 +30,18 @@ public class Rating implements Serializable {
     @ManyToOne
     private User user;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
     public Rating() {
+        this.createdAt = new Date();
     }
 
     public Rating(int score, Publication publication, User user) {
         this.score = score;
         this.publication = publication;
         this.user = user;
+        this.createdAt = new Date();
     }
 
 
@@ -72,5 +78,13 @@ public class Rating implements Serializable {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 }

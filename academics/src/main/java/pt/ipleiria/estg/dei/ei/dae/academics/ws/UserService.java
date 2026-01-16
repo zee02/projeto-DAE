@@ -18,6 +18,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.ChangePasswordDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.mail.MessagingException;
@@ -266,6 +267,31 @@ public class UserService {
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("error", e.getMessage()))
+                    .build();
+        }
+    }
+
+    // EP28 - Consultar histórico de atividade de qualquer utilizador
+    @GET
+    @Path("/{user_id}/activity")
+    @Authenticated
+    @RolesAllowed({"Administrador"})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserActivity(
+            @PathParam("user_id") long userId,
+            @QueryParam("page") @DefaultValue("1") int page,
+            @QueryParam("limit") @DefaultValue("10") int limit) {
+        
+        try {
+            Map<String, Object> result = userBean.getUserActivity(userId, page, limit);
+            return Response.ok(result).build();
+        } catch (MyEntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", e.getMessage()))
                     .build();
         }
     }

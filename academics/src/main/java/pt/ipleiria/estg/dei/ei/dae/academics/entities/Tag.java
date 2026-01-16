@@ -29,6 +29,12 @@ public class Tag implements Serializable {
 
     private boolean visible = true;
 
+    @ManyToOne
+    private User createdBy;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private java.util.Date createdAt;
+
     @ManyToMany(mappedBy = "tags") // O dono da relação é a Publication
     private List<Publication> publications;
 
@@ -89,6 +95,22 @@ public class Tag implements Serializable {
 
     public void setVisible(boolean visible) {
         this.visible = visible;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public java.util.Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(java.util.Date createdAt) {
+        this.createdAt = createdAt;
     }
 
     //equals and hash code gerados nos intelij
