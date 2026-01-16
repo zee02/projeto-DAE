@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -196,5 +199,73 @@ public class PublicationBean {
         publication.setUpdatedAt(new Timestamp(new Date().getTime()));
 
         return publication;
+    }
+
+    // EP09 - Pesquisar publicações
+    public List<Publication> searchPublications(String title, Long authorId, String scientificArea,
+                                                 List<Long> tagIds, String dateFrom, String dateTo) {
+        StringBuilder jpql = new StringBuilder(
+                "SELECT DISTINCT p FROM Publication p LEFT JOIN p.tags t WHERE p.isVisible = true");
+
+        List<String> conditions = new ArrayList<>();
+
+        if (title != null && !title.isBlank()) {
+            conditions.add("LOWER(p.title) LIKE LOWER(:title)");
+        }
+        if (authorId != null) {
+            conditions.add("p.author.id = :authorId");
+        }
+        if (scientificArea != null && !scientificArea.isBlank()) {
+            conditions.add("LOWER(p.scientificArea) LIKE LOWER(:scientificArea)");
+        }
+        if (tagIds != null && !tagIds.isEmpty()) {
+            conditions.add("t.id IN :tagIds");
+        }
+        if (dateFrom != null && !dateFrom.isBlank()) {
+            conditions.add("p.createdAt >= :dateFrom");
+        }
+        if (dateTo != null && !dateTo.isBlank()) {
+            conditions.add("p.createdAt <= :dateTo");
+        }
+
+        for (String condition : conditions) {
+            jpql.append(" AND ").append(condition);
+        }
+
+        jpql.append(" ORDER BY p.createdAt DESC");
+
+        var query = em.createQuery(jpql.toString(), Publication.class);
+
+        if (title != null && !title.isBlank()) {
+            query.setParameter("title", "%" + title + "%");
+        }
+        if (authorId != null) {
+            query.setParameter("authorId", authorId);
+        }
+        if (scientificArea != null && !scientificArea.isBlank()) {
+            query.setParameter("scientificArea", "%" + scientificArea + "%");
+        }
+        if (tagIds != null && !tagIds.isEmpty()) {
+            query.setParameter("tagIds", tagIds);
+        }
+        if (dateFrom != null && !dateFrom.isBlank()) {
+            LocalDate from = LocalDate.parse(dateFrom);
+            Timestamp fromTs = Timestamp.valueOf(from.atStartOfDay());
+            query.setParameter("dateFrom", fromTs);
+        }
+        if (dateTo != null && !dateTo.isBlank()) {
+            LocalDate to = LocalDate.parse(dateTo);
+            Timestamp toTs = Timestamp.valueOf(to.plusDays(1).atStartOfDay());
+            query.setParameter("dateTo", toTs);
+        }
+
+        List<Publication> results = query.getResultList();
+
+        // Inicializar tags manualmente para evitar LazyInitializationException
+        for (Publication p : results) {
+            p.getTags().size(); // Força o carregamento da coleção
+        }
+
+        return results;
     }
 }

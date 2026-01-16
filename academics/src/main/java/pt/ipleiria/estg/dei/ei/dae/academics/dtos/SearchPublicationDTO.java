@@ -1,0 +1,63 @@
+package pt.ipleiria.estg.dei.ei.dae.academics.dtos;
+
+import java.util.List;
+
+public class SearchPublicationDTO {
+    private String title;
+    private Long authorId;
+    private String scientificArea;
+    private List<Long> tags;
+    private String dateFrom;
+    private String dateTo;
+
+    public SearchPublicationDTO() {
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
+    public String getScientificArea() {
+        return scientificArea;
+    }
+
+    public void setScientificArea(String scientificArea) {
+        this.scientificArea = scientificArea;
+    }
+
+    public List<Long> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Long> tags) {
+        this.tags = tags;
+    }
+
+    public String getDateFrom() {
+        return dateFrom;
+    }
+
+    public void setDateFrom(String dateFrom) {
+        this.dateFrom = dateFrom;
+    }
+
+    public String getDateTo() {
+        return dateTo;
+    }
+
+    public void setDateTo(String dateTo) {
+        this.dateTo = dateTo;
+    }
+}

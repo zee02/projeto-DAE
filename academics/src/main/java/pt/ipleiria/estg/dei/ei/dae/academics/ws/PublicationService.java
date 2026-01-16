@@ -53,6 +53,34 @@ public class PublicationService {
         return PublicationDTO.from(publicationBean.getAllPublic());
     }
 
+    // EP09 - Pesquisar publicações
+    @POST
+    @Path("/search")
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchPublications(SearchPublicationDTO searchDTO) {
+        List<Publication> publications = publicationBean.searchPublications(
+                searchDTO.getTitle(),
+                searchDTO.getAuthorId(),
+                searchDTO.getScientificArea(),
+                searchDTO.getTags(),
+                searchDTO.getDateFrom(),
+                searchDTO.getDateTo()
+        );
+
+        List<PublicationDTO> dtos = publications.stream()
+                .map(p -> {
+                    PublicationDTO dto = PublicationDTO.from(p);
+                    dto.setTags(TagDTO.from(p.getTags()));
+                    return dto;
+                })
+                .toList();
+
+        return Response.ok(dtos).build();
+    }
+
     //EP10 - Ordenar lista de publicações
     @POST
     @Path("/sort")
