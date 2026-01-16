@@ -95,6 +95,7 @@ public class ConfigBean {
             Publication pub29 = publicationBean.create("Análise e Projeto de Algoritmos", "Engenharia Informática", "duarte@mail.com");
             Publication pub30 = publicationBean.create("Infraestruturas Hidráulicas", "Engenharia Civil", "colab@mail.com");
             Publication pub31 = publicationBean.create("Arquitetura de Computadores", "Engenharia Informática", "teste@mail.com");
+            Publication pub32 = publicationBean.create("Modelo CNN para deteção de tumores", "Modelo Tumores", "tester@colaborador.pt");
 
 
 
