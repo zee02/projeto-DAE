@@ -97,7 +97,7 @@ public class ConfigBean {
             Publication pub31 = publicationBean.create("Arquitetura de Computadores", "Engenharia Informática", "teste@mail.com");
             Publication pub32 = publicationBean.create("Modelo CNN para deteção de tumores", "Modelo Tumores", "tester@colaborador.pt");
 
-
+            Publication pub33 = publicationBean.create("TESTE", "testeteste", "duarte@mail.com");
 
             commentBean.create(pub2, "teste@mail.com", "Este comentário foi criado no config");
             commentBean.create(pub2, "teste@mail.com", "Outro comentário");
@@ -125,6 +125,39 @@ public class ConfigBean {
 
 
             System.out.println("Users populated successfully!");
+
+
+
+
+
+//////////////////////teste US08/////////////////////////////////////////////////////
+            publicationBean.seedHistory(pub33.getId(), "duarte@mail.com",
+                    java.util.Map.of("summary", "Resumo corrigido pelo autor."));
+
+            publicationBean.seedHistory(pub33.getId(), "duarte@mail.com",
+                    java.util.Map.of("title", "Introdução à Programação em Java - Versão Revista"));
+
+
+            java.util.List<java.util.Map<String, Object>> tagsHistory = java.util.List.of(
+                    java.util.Map.of("id", 33L, "name", "Java"),
+                    java.util.Map.of("id", 33L, "name", "Backend")
+            );
+
+            publicationBean.seedHistory(pub33.getId(), "duarte@mail.com",
+                    java.util.Map.of("tags", tagsHistory));
+
+
+            publicationBean.seedHistory(pub33.getId(), "duarte@mail.com",
+                    java.util.Map.of("visible", false));
+
+            publicationBean.seedHistory(pub33.getId(), "duarte@mail.com",
+                    java.util.Map.of("visible", true));
+
+
+
+
+
+
         } catch (Exception e) {
             System.err.println("Error populating DB: " + e.getMessage());
         }

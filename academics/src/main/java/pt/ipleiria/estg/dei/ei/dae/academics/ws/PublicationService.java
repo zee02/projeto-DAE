@@ -6,6 +6,11 @@ import jakarta.persistence.NoResultException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
+import java.io.StringReader;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.PublicationEdit;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.*;
@@ -262,6 +267,46 @@ public class PublicationService {
         response.put("post_id", publication.getId());
         response.put("visible", publication.isVisible());
         response.put("updated_at", publication.getUpdatedAt());
+
+        return Response.ok(response).build();
+    }
+
+
+
+    //EP08- histórico de edições das publicações
+    @GET
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Path("/{post_id}/history")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPostHistory(
+            @PathParam("post_id") long postId,
+            @QueryParam("page") @DefaultValue("1") int page,
+            @QueryParam("limit") @DefaultValue("10") int limit
+    ) throws MyEntityNotFoundException {
+
+        String userId = securityContext.getUserPrincipal().getName();
+
+        List<PublicationEdit> edits = publicationBean.getPostHistory(postId, userId, page, limit);
+
+        // devolve JSON no formato do enunciado (sem DTO)
+        List<Map<String, Object>> response = edits.stream().map(e -> {
+            JsonStructure changes;
+            try (JsonReader reader = Json.createReader(new StringReader(e.getChangesJson()))) {
+                changes = reader.read();
+            }
+
+            return Map.of(
+                    "edit_id", e.getId(),
+                    "post_id", e.getPublication().getId(),
+                    "edited_at", e.getEditedAt(),
+                    "edited_by", Map.of(
+                            "id", e.getEditedBy().getId(),
+                            "name", e.getEditedBy().getName()
+                    ),
+                    "changes", changes
+            );
+        }).toList();
 
         return Response.ok(response).build();
     }

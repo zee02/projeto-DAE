@@ -17,6 +17,10 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.PublicationEdit;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,6 +43,8 @@ public class PublicationBean {
     private UserBean userBean;
 
     private static final String UPLOAD_DIR = "/tmp/uploads";
+
+    private final Jsonb jsonb = JsonbBuilder.create();
 
     public Publication create(String title, String scientificArea, String authorEmail) {
 
@@ -167,6 +173,12 @@ public class PublicationBean {
         publication.setSummary(newSummary);
         publication.setUpdatedAt(new Timestamp(new Date().getTime()));
 
+
+        // histórico (leve)
+        recordEdit(publication, user, Map.of(
+                "summary", "Resumo corrigido pelo autor."
+        ));
+
         return publication;
     }
 
@@ -268,4 +280,54 @@ public class PublicationBean {
 
         return results;
     }
+
+
+    private void recordEdit(Publication publication, User editor, Map<String, Object> changes) {
+        String changesJson = jsonb.toJson(changes);
+
+        PublicationEdit edit = new PublicationEdit(
+                publication,
+                editor,
+                new Timestamp(new Date().getTime()),
+                changesJson
+        );
+
+        em.persist(edit);
+    }
+
+    public void seedHistory(long postId, String editorEmail, Map<String, Object> changes) throws MyEntityNotFoundException {
+        Publication publication = em.find(Publication.class, postId);
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
+        }
+        User editor = userBean.findOrFail(editorEmail);
+        recordEdit(publication, editor, changes);
+    }
+
+
+    public List<PublicationEdit> getPostHistory(long postId, String userId, int page, int limit)
+            throws MyEntityNotFoundException {
+
+        Publication publication = em.find(Publication.class, postId);
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
+        }
+
+        User requester = userBean.find(userId);
+
+        // regra do enunciado: só o autor pode ver o histórico (inclui posts não visíveis)
+        if (publication.getAuthor().getId() != requester.getId()) {
+            throw new ForbiddenException("Utilizador não é o autor da publicação");
+        }
+
+        int safePage = Math.max(page, 1);
+        int safeLimit = Math.max(1, Math.min(limit, 100));
+
+        return em.createNamedQuery("getPublicationHistory", PublicationEdit.class)
+                .setParameter("postId", postId)
+                .setFirstResult((safePage - 1) * safeLimit)
+                .setMaxResults(safeLimit)
+                .getResultList();
+    }
+
 }
