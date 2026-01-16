@@ -13,12 +13,13 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UpdateUserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.RoleDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.ForgotPasswordDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 import jakarta.persistence.EntityNotFoundException;
-import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
+import jakarta.mail.MessagingException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +28,6 @@ import java.util.Map;
 @Path("users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated // Protege todos os endpoints desta classe
 public class UserService {
     @EJB
     private UserBean userBean;
@@ -38,19 +38,21 @@ public class UserService {
     @EJB
     private CollaboratorBean collaboratorBean;
 
-
     @EJB
     private ResponsibleBean responsibleBean;
 
-
     @EJB
     private AdministratorBean administratorBean;
+
+    @EJB
+    private EmailBean emailBean;
 
     @Context
     private SecurityContext securityContext;
 
     // EP31 - Consultar todos (Apenas Admin)
     @GET
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public List<UserDTO> getAllUsers() {
         return UserDTO.from(userBean.findAll());
@@ -58,6 +60,7 @@ public class UserService {
 
     // EP22 - Criar utilizador (Apenas Admin)
     @POST
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public Response createUser(@Valid UserDTO dto) {
         try {
@@ -102,6 +105,7 @@ public class UserService {
 
     @DELETE
     @Path("/{user_id}")
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public Response deleteUser(@PathParam("user_id") long userId) {
         try {
@@ -115,6 +119,7 @@ public class UserService {
     // EP25 - Desativar utilizador (Soft delete)
     @PUT
     @Path("/{user_id}/activate")
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public Response activateUser(@PathParam("user_id") long userId) {
         try {
@@ -128,6 +133,7 @@ public class UserService {
     // EP26 - Desativar utilizador (Soft delete)
     @PUT
     @Path("/{user_id}/deactivate")
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public Response deactivateUser(@PathParam("user_id") long userId) {
         try {
@@ -157,6 +163,7 @@ public class UserService {
     //EP13 - Editar dados pessoais
     @PATCH
     @Path("/me")
+    @Authenticated
     @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
     public Response updatePersonalData(@Valid UpdateUserDTO dto) {
         String user_id = securityContext.getUserPrincipal().getName();
@@ -168,6 +175,7 @@ public class UserService {
     //EP27 - Alterar o papel (role) de um utilizador
     @PUT
     @Path("/{user_id}/role")
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public Response updateUserRole(@PathParam("user_id") long userId, @Valid RoleDTO dto) {
         try {
@@ -187,6 +195,7 @@ public class UserService {
     //EP23 - Editar dados de um utilizador (Admin)
     @PUT
     @Path("/{user_id}")
+    @Authenticated
     @RolesAllowed({"Administrador"})
     public Response updateUser(@PathParam("user_id") long userId, @Valid UserDTO dto) {
         try {
@@ -205,5 +214,28 @@ public class UserService {
         } catch (MyEntityExistsException | IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST).entity(Map.of("error", e.getMessage())).build();
         }
+    }
+
+    //EP15 - Recuperar palavra-passe através do email
+    @POST
+    @Path("/password/forgot")
+    public Response forgotPassword(@Valid ForgotPasswordDTO dto) {
+        userBean.resetPassword(dto.getEmail());
+
+        try {
+            // Tentar enviar email (só se o utilizador existir, mas não revelamos isso)
+            if (userBean.findByEmail(dto.getEmail()) != null) {
+                emailBean.send(
+                        dto.getEmail(),
+                        "Recuperação de Palavra-passe",
+                        "A sua palavra-passe foi redefinida para: 123\n\nPor favor, altere a sua palavra-passe após iniciar sessão."
+                );
+            }
+        } catch (MessagingException e) {
+            // Log do erro mas não falhar o pedido
+            System.err.println("Erro ao enviar email: " + e.getMessage());
+        }
+
+        return Response.ok(Map.of("message", "Se existir uma conta associada a este email, enviámos instruções para redefinir a palavra-passe.")).build();
     }
 }
