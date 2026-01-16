@@ -76,4 +76,26 @@ public class CommentBean {
 
         return updatedAt;
     }
+
+    public Comment find(long commentId) {
+        return em.find(Comment.class, commentId);
+    }
+
+    //EP19 - Ocultar ou mostrar um comentário específico
+    public Comment updateVisibility(long postId, long commentId, boolean visible) throws MyEntityNotFoundException {
+        Comment comment = find(commentId);
+
+        if (comment == null) {
+            throw new MyEntityNotFoundException("Comentário com id " + commentId + " não encontrado");
+        }
+
+        if (comment.getPublication().getId() != postId) {
+            throw new MyEntityNotFoundException("Comentário com id " + commentId + " não pertence à publicação com id " + postId);
+        }
+
+        comment.setVisible(visible);
+        comment.setUpdatedAt(new Date());
+
+        return comment;
+    }
 }

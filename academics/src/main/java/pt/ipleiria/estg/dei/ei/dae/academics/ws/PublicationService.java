@@ -197,6 +197,28 @@ public class PublicationService {
         return Response.ok(response).build();
     }
 
+    //EP19 - Ocultar ou mostrar um comentário específico
+    @PUT
+    @Authenticated
+    @RolesAllowed({"Responsavel", "Administrador"})
+    @Path("/{post_id}/comments/{comment_id}/visibility")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCommentVisibility(
+            @PathParam("post_id") long post_id,
+            @PathParam("comment_id") long comment_id,
+            @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
+        Comment comment = commentBean.updateVisibility(post_id, comment_id, dto.getVisible());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Visibilidade do comentário atualizada com sucesso");
+        response.put("comment_id", comment.getId());
+        response.put("visible", comment.isVisible());
+        response.put("updated_at", comment.getUpdatedAt());
+
+        return Response.ok(response).build();
+    }
+
     //EP20 - Ocultar ou mostrar publicação
     @PUT
     @Authenticated
