@@ -8,6 +8,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityConflictException;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 
@@ -62,6 +63,7 @@ public class TagBean {
         Tag newTag = new Tag();
         newTag.setName(nomeTag.trim());
         em.persist(newTag);
+        em.flush(); // Força a geração do ID imediatamente
         return newTag;
     }
 
@@ -114,6 +116,71 @@ public class TagBean {
                 tag.getPublications().remove(publication);
             }
         }
+    }
+
+    public Tag find(long id) {
+        return em.find(Tag.class, id);
+    }
+
+    // EP11 - Subscrever tag
+    public Tag subscribeUserToTag(String userId, long tagId) throws MyEntityNotFoundException, MyEntityConflictException {
+        System.out.println("=== DEBUG: Tentando subscrever tag " + tagId + " para user " + userId);
+        
+        User user = userBean.find(userId);
+        if (user == null) {
+            System.out.println("=== DEBUG: User não encontrado!");
+            throw new MyEntityNotFoundException("Utilizador com id " + userId + " não encontrado");
+        }
+        System.out.println("=== DEBUG: User encontrado: " + user.getName());
+
+        // Tenta buscar a tag de diferentes formas para garantir que existe
+        Tag tag = em.find(Tag.class, tagId);
+        System.out.println("=== DEBUG: Tag no 1º find: " + (tag != null ? tag.getName() : "NULL"));
+        
+        // Se não encontrar, tenta fazer refresh do contexto
+        if (tag == null) {
+            System.out.println("=== DEBUG: Tag null, limpando cache...");
+            em.clear(); // Limpa o cache do EntityManager
+            tag = em.find(Tag.class, tagId);
+            System.out.println("=== DEBUG: Tag após clear: " + (tag != null ? tag.getName() : "AINDA NULL"));
+        }
+        
+        if (tag == null) {
+            System.out.println("=== DEBUG: Tag definitivamente não encontrada!");
+            throw new MyEntityNotFoundException("Tag com id " + tagId + " não encontrada");
+        }
+
+        if (user.getSubscribedTags().contains(tag)) {
+            throw new MyEntityConflictException("Tag já subscrita pelo utilizador");
+        }
+
+        user.subscribeTag(tag);
+        tag.getSubscribers().add(user);
+        
+        System.out.println("=== DEBUG: Subscrição bem-sucedida!");
+        return tag;
+    }
+
+    // Cancelar subscrição de tag
+    public Tag unsubscribeUserFromTag(String userId, long tagId) throws MyEntityNotFoundException, MyEntityConflictException {
+        User user = userBean.find(userId);
+        if (user == null) {
+            throw new MyEntityNotFoundException("Utilizador com id " + userId + " não encontrado");
+        }
+
+        Tag tag = em.find(Tag.class, tagId);
+        if (tag == null) {
+            throw new MyEntityNotFoundException("Tag com id " + tagId + " não encontrada");
+        }
+
+        if (!user.getSubscribedTags().contains(tag)) {
+            throw new MyEntityConflictException("Tag não está subscrita pelo utilizador");
+        }
+
+        user.unsubscribeTag(tag);
+        tag.getSubscribers().remove(user);
+
+        return tag;
     }
 
 }

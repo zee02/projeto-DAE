@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -45,6 +46,14 @@ public class User implements Serializable {
 
     @OneToMany(mappedBy = "author")
     public List<Comment> comments;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_subscribed_tags",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id", referencedColumnName = "id")
+    )
+    private List<Tag> subscribedTags = new ArrayList<>();
 
     public User() {
     }
@@ -102,5 +111,23 @@ public class User implements Serializable {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public List<Tag> getSubscribedTags() {
+        return subscribedTags;
+    }
+
+    public void setSubscribedTags(List<Tag> subscribedTags) {
+        this.subscribedTags = subscribedTags;
+    }
+
+    public void subscribeTag(Tag tag) {
+        if (!subscribedTags.contains(tag)) {
+            subscribedTags.add(tag);
+        }
+    }
+
+    public void unsubscribeTag(Tag tag) {
+        subscribedTags.remove(tag);
     }
 }

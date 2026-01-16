@@ -26,14 +26,19 @@ public class Tag implements Serializable {
     @ManyToMany(mappedBy = "tags") // O dono da relação é a Publication
     private List<Publication> publications;
 
+    @ManyToMany(mappedBy = "subscribedTags")
+    private List<User> subscribers = new ArrayList<>();
+
     public Tag() {
         this.publications = new ArrayList<>();
+        this.subscribers = new ArrayList<>();
     }
 
     public Tag(long id, String name) {
         this.id = id;
         this.name = name;
         this.publications = new ArrayList<>();
+        this.subscribers = new ArrayList<>();
     }
 
     public long getId() {
@@ -62,6 +67,14 @@ public class Tag implements Serializable {
 
     public void addPublication(Publication publication) {
         this.publications.add(publication);
+    }
+
+    public List<User> getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(List<User> subscribers) {
+        this.subscribers = subscribers;
     }
 
     //equals and hash code gerados nos intelij
