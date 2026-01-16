@@ -72,4 +72,15 @@ public class AuthService {
         var user = userBean.find(id);
         return Response.ok(UserDTO.from(user)).build();
     }
+
+    //EP30 - Logout / Terminar sessão do utilizador
+    @POST
+    @Authenticated
+    @Path("/logout")
+    public Response logout() {
+        // Com JWT stateless, o token não pode ser invalidado no servidor.
+        // O frontend deve apagar o token do lado do cliente.
+        // Para invalidação real, seria necessário implementar uma blacklist de tokens.
+        return Response.ok(java.util.Map.of("message", "Logout efetuado com sucesso")).build();
+    }
 }
