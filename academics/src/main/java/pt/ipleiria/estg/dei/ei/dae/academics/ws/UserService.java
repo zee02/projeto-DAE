@@ -183,4 +183,27 @@ public class UserService {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
         }
     }
+
+    //EP23 - Editar dados de um utilizador (Admin)
+    @PUT
+    @Path("/{user_id}")
+    @RolesAllowed({"Administrador"})
+    public Response updateUser(@PathParam("user_id") long userId, @Valid UserDTO dto) {
+        try {
+            User updatedUser = userBean.updateUser(userId, dto.getName(), dto.getEmail(), dto.getRole().toString());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Dados atualizados com sucesso");
+            response.put("user_id", updatedUser.getId());
+            response.put("name", updatedUser.getName());
+            response.put("email", updatedUser.getEmail());
+            response.put("role", dto.getRole().toString());
+
+            return Response.ok(response).build();
+        } catch (EntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(Map.of("error", e.getMessage())).build();
+        } catch (MyEntityExistsException | IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(Map.of("error", e.getMessage())).build();
+        }
+    }
 }

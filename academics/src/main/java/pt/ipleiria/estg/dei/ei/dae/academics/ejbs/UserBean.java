@@ -140,4 +140,40 @@ public class UserBean {
 
         return em.find(User.class, userId);
     }
+
+    // EP23 - Editar dados de um utilizador (Admin)
+    public User updateUser(long userId, String name, String email, String role) {
+        User user = em.find(User.class, userId);
+
+        if (user == null) {
+            throw new EntityNotFoundException("Utilizador com id " + userId + " não encontrado");
+        }
+
+        // Atualizar nome
+        if (name != null && !name.isBlank()) {
+            user.setName(name);
+        }
+
+        // Atualizar email (verificar duplicados)
+        if (email != null && !email.isBlank()) {
+            User existingUser = findByEmail(email);
+            if (existingUser != null && existingUser.getId() != user.getId()) {
+                throw new MyEntityExistsException("Email já está em uso por outro utilizador");
+            }
+            user.setEmail(email);
+        }
+
+        // Atualizar role (validar primeiro)
+        if (role != null && !role.isBlank()) {
+            if (!role.equals("Colaborador") && !role.equals("Responsavel") && !role.equals("Administrador")) {
+                throw new IllegalArgumentException("Role inválido: " + role + ". Deve ser: Colaborador, Responsavel ou Administrador");
+            }
+            updateRole(userId, role);
+            em.flush();
+            em.clear();
+            user = em.find(User.class, userId);
+        }
+
+        return user;
+    }
 }
