@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Path("admin")
+@Path("hidden-content")
 @Produces({MediaType.APPLICATION_JSON})
 @Consumes({MediaType.APPLICATION_JSON})
 @Authenticated
@@ -38,7 +38,6 @@ public class AdminService {
 
     // EP21 - Consultar informação oculta
     @GET
-    @Path("hidden")
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response getHiddenContent(
             @QueryParam("type") String type,
