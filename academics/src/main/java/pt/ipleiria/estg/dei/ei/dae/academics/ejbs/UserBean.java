@@ -5,8 +5,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Hasher;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import jakarta.persistence.EntityNotFoundException;
 
 @Stateless
@@ -203,5 +206,130 @@ public class UserBean {
         user.setPassword(Hasher.hash(newPassword));
 
         return user;
+    }
+
+    // EP28 - Get user activity history
+    public Map<String, Object> getUserActivity(long userId, int page, int limit) throws MyEntityNotFoundException {
+        User user = em.find(User.class, userId);
+        if (user == null) {
+            throw new MyEntityNotFoundException("Utilizador com id " + userId + " não encontrado");
+        }
+
+        // Validate pagination
+        if (page < 1) {
+            throw new IllegalArgumentException("Número de página inválido");
+        }
+        if (limit < 1 || limit > 100) {
+            throw new IllegalArgumentException("Limite deve estar entre 1 e 100");
+        }
+
+        // Fetch all activities separately and merge
+        List<Map<String, Object>> allActivities = new java.util.ArrayList<>();
+
+        // Fetch publications (uploads)
+        List<Publication> publications = em.createQuery(
+                "SELECT p FROM Publication p WHERE p.author.id = :userId ORDER BY p.submissionDate DESC", 
+                Publication.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        
+        for (Publication p : publications) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("id", p.getId());
+            activity.put("type", "upload");
+            activity.put("title", p.getTitle());
+            activity.put("date", p.getSubmissionDate());
+            allActivities.add(activity);
+        }
+
+        // Fetch edits
+        List<PublicationEdit> edits = em.createQuery(
+                "SELECT pe FROM PublicationEdit pe WHERE pe.editedBy.id = :userId ORDER BY pe.editedAt DESC", 
+                PublicationEdit.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        
+        for (PublicationEdit e : edits) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("id", e.getId());
+            activity.put("type", "edit");
+            activity.put("title", "Edição de " + e.getPublication().getTitle());
+            activity.put("date", new java.util.Date(e.getEditedAt().getTime()));
+            allActivities.add(activity);
+        }
+
+        // Fetch comments
+        List<Comment> comments = em.createQuery(
+                "SELECT c FROM Comment c WHERE c.author.id = :userId ORDER BY c.createdAt DESC", 
+                Comment.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        
+        for (Comment c : comments) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("id", c.getId());
+            activity.put("type", "comment");
+            activity.put("title", "Comentário em " + c.getPublication().getTitle());
+            activity.put("date", c.getCreatedAt());
+            allActivities.add(activity);
+        }
+
+        // Fetch ratings
+        List<Rating> ratings = em.createQuery(
+                "SELECT r FROM Rating r WHERE r.user.id = :userId ORDER BY r.createdAt DESC", 
+                Rating.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        
+        for (Rating r : ratings) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("id", r.getId());
+            activity.put("type", "rating");
+            activity.put("title", "Avaliação de " + r.getPublication().getTitle());
+            activity.put("date", r.getCreatedAt());
+            allActivities.add(activity);
+        }
+
+        // Fetch tags created
+        List<Tag> tags = em.createQuery(
+                "SELECT t FROM Tag t WHERE t.createdBy.id = :userId ORDER BY t.createdAt DESC", 
+                Tag.class)
+                .setParameter("userId", userId)
+                .getResultList();
+        
+        for (Tag t : tags) {
+            Map<String, Object> activity = new HashMap<>();
+            activity.put("id", t.getId());
+            activity.put("type", "tag_creation");
+            activity.put("title", "Criação da tag " + t.getName());
+            activity.put("date", t.getCreatedAt());
+            allActivities.add(activity);
+        }
+
+        // Sort all activities by date descending
+        allActivities.sort((a1, a2) -> {
+            java.util.Date d1 = (java.util.Date) a1.get("date");
+            java.util.Date d2 = (java.util.Date) a2.get("date");
+            return d2.compareTo(d1);
+        });
+
+        // Calculate totals
+        int totalActivities = allActivities.size();
+        int totalPages = (int) Math.ceil((double) totalActivities / limit);
+
+        // Apply pagination manually
+        int fromIndex = (page - 1) * limit;
+        int toIndex = Math.min(fromIndex + limit, totalActivities);
+        List<Map<String, Object>> activities = fromIndex < totalActivities 
+                ? allActivities.subList(fromIndex, toIndex) 
+                : new java.util.ArrayList<>();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("activities", activities);
+        response.put("page", page);
+        response.put("total_pages", totalPages);
+        response.put("total_activities", totalActivities);
+
+        return response;
     }
 }
