@@ -183,4 +183,27 @@ public class TagBean {
         return tag;
     }
 
+    // EP17 - Eliminar tag
+    public void delete(long tagId) throws MyEntityNotFoundException {
+        Tag tag = em.find(Tag.class, tagId);
+
+        if (tag == null) {
+            throw new MyEntityNotFoundException("Tag não encontrada");
+        }
+
+        // Verificar se a tag está associada a publicações
+        if (!tag.getPublications().isEmpty()) {
+            throw new IllegalArgumentException("A tag não pode ser eliminada porque está em uso");
+        }
+
+        // Remover subscrições de utilizadores (criar cópia para evitar ConcurrentModificationException)
+        List<User> subscribersCopy = new ArrayList<>(tag.getSubscribers());
+        for (User user : subscribersCopy) {
+            user.unsubscribeTag(tag);
+            tag.getSubscribers().remove(user);
+        }
+
+        em.remove(tag);
+    }
+
 }
