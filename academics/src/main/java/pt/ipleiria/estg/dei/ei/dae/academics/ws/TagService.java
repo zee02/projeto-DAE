@@ -90,4 +90,17 @@ public class TagService {
 
         return Response.ok(response).build();
     }
+
+    // EP17 - Eliminar tag
+    @DELETE
+    @Path("/{tag_id}")
+    @RolesAllowed({"Responsavel", "Administrador"})
+    public Response deleteTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
+        tagBean.delete(tagId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Tag eliminada com sucesso");
+
+        return Response.ok(response).build();
+    }
 }
