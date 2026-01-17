@@ -271,6 +271,33 @@ public class UserService {
         }
     }
 
+    // EP12 - Consultar o próprio histórico de atividade
+    @GET
+    @Path("/me/activity")
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMyActivity(
+            @QueryParam("page") @DefaultValue("1") int page,
+            @QueryParam("limit") @DefaultValue("10") int limit) {
+        
+        try {
+            String odUserId = securityContext.getUserPrincipal().getName();
+            long userId = Long.parseLong(odUserId);
+            
+            Map<String, Object> result = userBean.getUserActivity(userId, page, limit);
+            return Response.ok(result).build();
+        } catch (MyEntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        }
+    }
+
     // EP28 - Consultar histórico de atividade de qualquer utilizador
     @GET
     @Path("/{user_id}/activity")
