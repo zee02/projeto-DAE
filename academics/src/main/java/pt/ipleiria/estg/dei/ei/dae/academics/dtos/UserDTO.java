@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserDTO implements Serializable {
-    //private long id;
+    private long id;
     private String name;
     private String email;
     private Role role;
@@ -22,7 +22,8 @@ public class UserDTO implements Serializable {
     public UserDTO() {
     }
 
-    public UserDTO(String name, String email, Role role) {
+    public UserDTO(long id, String name, String email, Role role) {
+        this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
@@ -30,6 +31,7 @@ public class UserDTO implements Serializable {
 
     public static UserDTO from(User user) {
         return new UserDTO(
+                user.getId(),
                 user.getName(),
                 user.getEmail(),
                 mapRole(user)
@@ -47,6 +49,13 @@ public class UserDTO implements Serializable {
     }
     // Getters e Setters Completos
 
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
