@@ -121,9 +121,9 @@ public class UserBean {
 
         String currentType = user.getClass().getSimpleName();
         String targetType = switch (newRole) {
-            case "Colaborador" -> "Collaborator";
-            case "Responsavel" -> "Responsible";
-            case "Administrador" -> "Administrator";
+            case "Colaborador" -> "Colaborador";
+            case "Responsavel" -> "Responsavel";
+            case "Administrador" -> "Administrador";
             default -> throw new IllegalArgumentException("Role inválido: " + newRole);
         };
 
