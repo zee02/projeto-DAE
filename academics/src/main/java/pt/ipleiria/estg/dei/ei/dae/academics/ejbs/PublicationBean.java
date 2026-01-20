@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import org.hibernate.Hibernate;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PaginatedPublicationsDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
@@ -93,7 +94,7 @@ public class PublicationBean {
             summary = "Resumo pendente de geração automática.";
         }
 
-        Publication publication = new Publication(title, area, false, summary, fileName,uniqueFileName, author);
+        Publication publication = new Publication(title, area, false, summary, fileName, uniqueFileName, author);
 
         em.persist(publication);
         return publication;
@@ -121,9 +122,17 @@ public class PublicationBean {
     }
 
 
-    public List<PublicationDTO> findMyPublications(String userId, int page, int limit, Boolean isVisible, Long tagId) {
+    public PaginatedPublicationsDTO<PublicationDTO> findMyPublications(String userId, int page, int limit, Boolean isVisible, Long tagId) {
         User user = userBean.find(userId);
 
+        // 🔹 TOTAL
+        long total = em.createNamedQuery("countMyPosts", Long.class)
+                .setParameter("email", user.getEmail())
+                .setParameter("isVisible", isVisible)
+                .setParameter("tagId", tagId)
+                .getSingleResult();
+
+        // 🔹 IDS PAGINADOS
         List<Long> ids = em.createNamedQuery("getMyPostIds", Object[].class)
                 .setParameter("email", user.getEmail())
                 .setParameter("isVisible", isVisible)
@@ -136,10 +145,10 @@ public class PublicationBean {
                 .toList();
 
         if (ids.isEmpty()) {
-            return List.of();
+            return new PaginatedPublicationsDTO<>(List.of(), total);
         }
 
-        return em.createNamedQuery("getMyPostsWithTags", Publication.class)
+        List<PublicationDTO> data = em.createNamedQuery("getMyPostsWithTags", Publication.class)
                 .setParameter("ids", ids)
                 .getResultList()
                 .stream()
@@ -153,6 +162,8 @@ public class PublicationBean {
                     return dto;
                 })
                 .toList();
+
+        return new PaginatedPublicationsDTO<>(data, total);
     }
 
     // EP02 - Corrigir resumo gerado por IA
@@ -184,7 +195,7 @@ public class PublicationBean {
 
     // EP10 - Ordenar lista de publicações
     public List<Publication> getAllPublicSorted(String sortBy, String order) {
-        // Mapear campo do DTO para campo da entidade
+
         String fieldName = switch (sortBy) {
             case "average_rating" -> "averageRating";
             case "comments_count" -> "commentsCount";
@@ -194,9 +205,32 @@ public class PublicationBean {
 
         String orderDirection = order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
 
-        String jpql = "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = true ORDER BY p." + fieldName + " " + orderDirection;
+        // 1️⃣ Buscar publicações + tags
+        String jpqlPublications = """
+                    SELECT DISTINCT p
+                    FROM Publication p
+                    LEFT JOIN FETCH p.tags
+                    WHERE p.isVisible = true
+                    ORDER BY p.%s %s
+                """.formatted(fieldName, orderDirection);
 
-        return em.createQuery(jpql, Publication.class).getResultList();
+        List<Publication> publications =
+                em.createQuery(jpqlPublications, Publication.class)
+                        .getResultList();
+
+        // 2️⃣ Buscar comentários (sem fetch múltiplo)
+        if (!publications.isEmpty()) {
+            em.createQuery("""
+                                SELECT DISTINCT p
+                                FROM Publication p
+                                LEFT JOIN FETCH p.comments
+                                WHERE p IN :publications
+                            """, Publication.class)
+                    .setParameter("publications", publications)
+                    .getResultList();
+        }
+
+        return publications;
     }
 
     // EP20 - Ocultar ou mostrar publicação
@@ -215,7 +249,7 @@ public class PublicationBean {
 
     // EP09 - Pesquisar publicações
     public List<Publication> searchPublications(String title, Long authorId, String scientificArea,
-                                                 List<Long> tagIds, String dateFrom, String dateTo) {
+                                                List<Long> tagIds, String dateFrom, String dateTo) {
         StringBuilder jpql = new StringBuilder(
                 "SELECT DISTINCT p FROM Publication p LEFT JOIN p.tags t WHERE p.isVisible = true");
 
@@ -342,7 +376,6 @@ public class PublicationBean {
         return em.createQuery("SELECT COUNT(p) FROM Publication p WHERE p.isVisible = false", Long.class)
                 .getSingleResult();
     }
-
 
 
 }

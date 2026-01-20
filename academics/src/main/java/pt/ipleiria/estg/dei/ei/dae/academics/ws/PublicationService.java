@@ -129,9 +129,11 @@ public class PublicationService {
                 .map(p -> {
                     PublicationDTO dto = PublicationDTO.from(p);
                     dto.setTags(TagDTO.from(p.getTags()));
+                    dto.setComments(CommentDTO.from(p.getComments()));
                     return dto;
                 })
                 .toList();
+
 
         return Response.ok(dtos).build();
     }

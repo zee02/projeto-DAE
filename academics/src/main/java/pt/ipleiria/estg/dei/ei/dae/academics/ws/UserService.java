@@ -8,13 +8,7 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CollaboratorDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UpdateUserDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.RoleDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.ForgotPasswordDTO;
-import pt.ipleiria.estg.dei.ei.dae.academics.dtos.ChangePasswordDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
@@ -148,19 +142,17 @@ public class UserService {
     }
 
 
-
     //EP07
     @GET
     @Path("/me/posts")
     @Authenticated
     public Response getMyPublications(@QueryParam("page") @DefaultValue("1") int page, @QueryParam("limit") @DefaultValue("10") int limit, @QueryParam("is_visible") Boolean isVisible, @QueryParam("tag") Long tagId) {
 
-        String user_id = securityContext.getUserPrincipal().getName();
+        String userId = securityContext.getUserPrincipal().getName();
 
-        List<PublicationDTO> publications = publicationBean.findMyPublications(user_id, page, limit, isVisible, tagId);
+        PaginatedPublicationsDTO<PublicationDTO> response = publicationBean.findMyPublications(userId, page, limit, isVisible, tagId);
 
-
-        return Response.ok(publications).build();
+        return Response.ok(response).build();
     }
 
     //EP13 - Editar dados pessoais
@@ -280,11 +272,11 @@ public class UserService {
     public Response getMyActivity(
             @QueryParam("page") @DefaultValue("1") int page,
             @QueryParam("limit") @DefaultValue("10") int limit) {
-        
+
         try {
             String odUserId = securityContext.getUserPrincipal().getName();
             long userId = Long.parseLong(odUserId);
-            
+
             Map<String, Object> result = userBean.getUserActivity(userId, page, limit);
             return Response.ok(result).build();
         } catch (MyEntityNotFoundException e) {
@@ -308,7 +300,7 @@ public class UserService {
             @PathParam("user_id") long userId,
             @QueryParam("page") @DefaultValue("1") int page,
             @QueryParam("limit") @DefaultValue("10") int limit) {
-        
+
         try {
             Map<String, Object> result = userBean.getUserActivity(userId, page, limit);
             return Response.ok(result).build();

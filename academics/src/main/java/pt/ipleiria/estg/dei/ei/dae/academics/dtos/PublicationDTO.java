@@ -121,4 +121,7 @@ public class PublicationDTO implements Serializable {
         this.tags = tags;
     }
 
+    public void setComments(List<CommentDTO> comments) {
+        this.comments = comments;
+    }
 }

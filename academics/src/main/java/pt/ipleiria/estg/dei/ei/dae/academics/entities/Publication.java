@@ -41,6 +41,18 @@ import java.util.List;
         @NamedQuery(
                 name = "getHiddenPublications",
                 query = "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = false ORDER BY p.updatedAt DESC"
+        ),
+        @NamedQuery(
+                name = "countMyPosts",
+                query = """
+                          SELECT COUNT(DISTINCT p.id)
+                          FROM Publication p
+                          JOIN p.author a
+                          LEFT JOIN p.tags t
+                          WHERE a.email = :email
+                            AND (:isVisible IS NULL OR p.isVisible = :isVisible)
+                            AND (:tagId IS NULL OR t.id = :tagId)
+                        """
         )
 })
 public class Publication implements Serializable {
@@ -125,7 +137,6 @@ public class Publication implements Serializable {
         this.updatedAt = null;
 
     }
-
 
 
     public long getId() {
