@@ -70,6 +70,12 @@ public class AuthService {
     public Response getAuthenticatedUser() {
         String id = securityContext.getUserPrincipal().getName();
         var user = userBean.find(id);
+        
+        // Initialize lazy collection before converting to DTO
+        if (user != null && user.getSubscribedTags() != null) {
+            org.hibernate.Hibernate.initialize(user.getSubscribedTags());
+        }
+        
         return Response.ok(UserDTO.from(user)).build();
     }
 
