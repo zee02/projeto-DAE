@@ -18,6 +18,8 @@ public class UserDTO implements Serializable {
     private Role role;
     // Password é usada apenas na criação (input), não na saída
     private String password;
+    // Lista de tags subscritas pelo usuário
+    private List<TagDTO> subscribedTags;
 
     public UserDTO() {
     }
@@ -29,12 +31,23 @@ public class UserDTO implements Serializable {
         this.role = role;
     }
 
+    public UserDTO(long id, String name, String email, Role role, List<TagDTO> subscribedTags) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+        this.subscribedTags = subscribedTags;
+    }
+
     public static UserDTO from(User user) {
         return new UserDTO(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                mapRole(user)
+                mapRole(user),
+                user.getSubscribedTags() != null ? 
+                    TagDTO.from(user.getSubscribedTags()) : 
+                    List.of()
         );
     }
 
@@ -87,5 +100,13 @@ public class UserDTO implements Serializable {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<TagDTO> getSubscribedTags() {
+        return subscribedTags;
+    }
+
+    public void setSubscribedTags(List<TagDTO> subscribedTags) {
+        this.subscribedTags = subscribedTags;
     }
 }
