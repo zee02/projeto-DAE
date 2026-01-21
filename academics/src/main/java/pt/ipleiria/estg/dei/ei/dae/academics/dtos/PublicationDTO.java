@@ -28,6 +28,7 @@ public class PublicationDTO implements Serializable {
     private String fileName;
     private String fileKey;
     private int ratingsCount;
+    private int commentsCount;
     private List<TagDTO> tags;
     private List<CommentDTO> comments;
     private Timestamp createdAt;
@@ -53,6 +54,7 @@ public class PublicationDTO implements Serializable {
         dto.ratingsCount = p.getRatingsCount();
         dto.fileName = p.getFileName();
         dto.fileKey = p.getFileKey();
+        dto.commentsCount = p.getCommentsCount();
         dto.tags = new LinkedList<>();
         dto.createdAt = p.getCreatedAt();
         dto.updatedAt = p.getUpdatedAt();
@@ -96,6 +98,10 @@ public class PublicationDTO implements Serializable {
 
     public int getRatingsCount() {
         return ratingsCount;
+    }
+
+    public int getCommentsCount() {
+        return commentsCount;
     }
 
     public List<TagDTO> getTags() {
@@ -146,3 +152,4 @@ public class PublicationDTO implements Serializable {
         this.fileKey = fileKey;
     }
 }
+

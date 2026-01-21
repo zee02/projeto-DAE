@@ -53,6 +53,7 @@ public class CommentBean {
 
         publication.getComments().add(newComent);
         em.persist(newComent);
+        publication.recalculateComments();
 
         return newComent;
 
@@ -110,5 +111,18 @@ public class CommentBean {
     public long countHiddenComments() {
         return em.createQuery("SELECT COUNT(c) FROM Comment c WHERE c.visible = false", Long.class)
                 .getSingleResult();
+    }
+
+    public void delete(long commentId) throws MyEntityNotFoundException {
+        Comment comment = find(commentId);
+
+        if (comment == null) {
+            throw new MyEntityNotFoundException("Comentário com id " + commentId + " não encontrado");
+        }
+
+        Publication publication = comment.getPublication();
+        publication.getComments().remove(comment);
+        em.remove(comment);
+        publication.recalculateComments();
     }
 }
