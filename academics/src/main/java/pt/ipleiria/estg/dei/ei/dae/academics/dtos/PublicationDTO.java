@@ -25,6 +25,7 @@ public class PublicationDTO implements Serializable {
     private AuthorDTO author;
     private double averageRating;
     private int ratingsCount;
+    private int commentsCount;
     private List<TagDTO> tags;
     private List<CommentDTO> comments;
     private Timestamp createdAt;
@@ -48,6 +49,7 @@ public class PublicationDTO implements Serializable {
         dto.author = AuthorDTO.from(p.getAuthor());
         dto.averageRating = p.getAverageRating();
         dto.ratingsCount = p.getRatingsCount();
+        dto.commentsCount = p.getCommentsCount();
         dto.tags = new LinkedList<>();
         dto.createdAt = p.getCreatedAt();
         dto.updatedAt = p.getUpdatedAt();
@@ -93,6 +95,10 @@ public class PublicationDTO implements Serializable {
         return ratingsCount;
     }
 
+    public int getCommentsCount() {
+        return commentsCount;
+    }
+
     public List<TagDTO> getTags() {
         return tags;
     }
@@ -125,3 +131,4 @@ public class PublicationDTO implements Serializable {
         this.comments = comments;
     }
 }
+
