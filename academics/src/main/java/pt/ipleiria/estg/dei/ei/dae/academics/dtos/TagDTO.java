@@ -16,6 +16,8 @@ public class TagDTO {
     @Size(max = 50, message = "O nome da tag não pode ter mais de 50 caracteres")
     private String name;
 
+    private boolean visible = true;
+
     // Para receber lista de IDs de tags (associar/desassociar)
     private ArrayList<Long> tags;
 
@@ -30,6 +32,7 @@ public class TagDTO {
         TagDTO dto = new TagDTO();
         dto.id = tag.getId();
         dto.name = tag.getName();
+        dto.visible = tag.isVisible();
         return dto;
     }
 
@@ -61,5 +64,13 @@ public class TagDTO {
 
     public void setTags(ArrayList<Long> tags) {
         this.tags = tags;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }
