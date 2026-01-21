@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.ei.dae.academics.dtos;
 
 import jakarta.json.bind.annotation.JsonbProperty;
 import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.persistence.Column;
 import org.hibernate.Hibernate;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
@@ -24,6 +25,8 @@ public class PublicationDTO implements Serializable {
     private String fileUrl;
     private AuthorDTO author;
     private double averageRating;
+    private String fileName;
+    private String fileKey;
     private int ratingsCount;
     private List<TagDTO> tags;
     private List<CommentDTO> comments;
@@ -48,6 +51,8 @@ public class PublicationDTO implements Serializable {
         dto.author = AuthorDTO.from(p.getAuthor());
         dto.averageRating = p.getAverageRating();
         dto.ratingsCount = p.getRatingsCount();
+        dto.fileName = p.getFileName();
+        dto.fileKey = p.getFileKey();
         dto.tags = new LinkedList<>();
         dto.createdAt = p.getCreatedAt();
         dto.updatedAt = p.getUpdatedAt();
@@ -123,5 +128,21 @@ public class PublicationDTO implements Serializable {
 
     public void setComments(List<CommentDTO> comments) {
         this.comments = comments;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public String getFileKey() {
+        return fileKey;
+    }
+
+    public void setFileKey(String fileKey) {
+        this.fileKey = fileKey;
     }
 }
