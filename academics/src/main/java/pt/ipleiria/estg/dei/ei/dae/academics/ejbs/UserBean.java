@@ -20,9 +20,20 @@ public class UserBean {
 
     public User find(String id) {
         try {
-            return em.createNamedQuery("findUser", User.class)
+            User user = em.createNamedQuery("findUser", User.class)
                     .setParameter("id",  Long.parseLong(id))
                     .getSingleResult();
+            
+            // Eagerly load subscribedTags to avoid lazy initialization issues
+            if (user != null) {
+                try {
+                    org.hibernate.Hibernate.initialize(user.getSubscribedTags());
+                } catch (Exception ex) {
+                    // Ignore if initialization fails, collection will be empty
+                }
+            }
+            
+            return user;
         } catch (Exception e) {
             return null;
         }
@@ -30,9 +41,20 @@ public class UserBean {
 
     public User findByEmail(String email) {
         try {
-            return em.createNamedQuery("findUserByEmail", User.class)
+            User user = em.createNamedQuery("findUserByEmail", User.class)
                     .setParameter("email", email)
                     .getSingleResult();
+            
+            // Eagerly load subscribedTags to avoid lazy initialization issues
+            if (user != null) {
+                try {
+                    org.hibernate.Hibernate.initialize(user.getSubscribedTags());
+                } catch (Exception ex) {
+                    // Ignore if initialization fails, collection will be empty
+                }
+            }
+            
+            return user;
         } catch (Exception e) {
             return null;
         }
@@ -51,6 +73,7 @@ public class UserBean {
         User user = findByEmail(email);
 
         if (user != null && Hasher.verify(password, user.getPassword())) {
+            // subscribedTags already initialized in findByEmail
             return user;
         }
 

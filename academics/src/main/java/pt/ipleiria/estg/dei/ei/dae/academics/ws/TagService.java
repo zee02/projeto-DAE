@@ -65,6 +65,9 @@ public class TagService {
 
         Tag tag = tagBean.subscribeUserToTag(userId, tagId);
         User user = userBean.find(userId);
+        
+        // Initialize lazy collection before converting to DTO
+        org.hibernate.Hibernate.initialize(user.getSubscribedTags());
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Tag subscrita com sucesso");
@@ -83,6 +86,9 @@ public class TagService {
 
         Tag tag = tagBean.unsubscribeUserFromTag(userId, tagId);
         User user = userBean.find(userId);
+        
+        // Initialize lazy collection before converting to DTO
+        org.hibernate.Hibernate.initialize(user.getSubscribedTags());
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Subscrição da tag cancelada com sucesso");
