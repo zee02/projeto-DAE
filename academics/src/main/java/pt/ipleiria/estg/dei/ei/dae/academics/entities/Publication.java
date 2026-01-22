@@ -15,7 +15,7 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(
                 name = "getAllPublicPosts",
-                query = " SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags  ORDER BY p.submissionDate DESC"),
+                query = " SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = true ORDER BY p.submissionDate DESC"),
         @NamedQuery(
                 name = "getMyPostIds",
                 query = """

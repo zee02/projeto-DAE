@@ -26,8 +26,10 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.PublicationEdit;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.sql.Timestamp;
+import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -60,7 +62,12 @@ public class PublicationBean {
         return publication;
     }
 
-
+    private String readUtf8(InputPart part) throws IOException {
+        return Normalizer.normalize(
+                part.getBodyAsString(),
+                Normalizer.Form.NFC
+        );
+    }
     public Publication create(MultipartFormDataInput input, String user_id) throws IOException {
 
         Map<String, List<InputPart>> formParts = input.getFormDataMap();
@@ -70,13 +77,16 @@ public class PublicationBean {
             throw new WebApplicationException("Missing required fields", Response.Status.BAD_REQUEST);
         }
 
-        String title = formParts.get("title").get(0).getBodyAsString();
-        String area = formParts.get("scientific_area").get(0).getBodyAsString();
+
+        String title = readUtf8(formParts.get("title").get(0));
+        String area  = readUtf8(formParts.get("scientific_area").get(0));
 
         String summary = null;
         if (formParts.containsKey("summary")) {
-            summary = formParts.get("summary").get(0).getBodyAsString();
+            summary = readUtf8(formParts.get("summary").get(0));
         }
+
+
 
         InputPart filePart = formParts.get("file").get(0);
         String fileName = PublicationUtils.getFileName(filePart.getHeaders());
