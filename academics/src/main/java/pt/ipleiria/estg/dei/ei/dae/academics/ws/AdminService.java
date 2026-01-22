@@ -42,7 +42,10 @@ public class AdminService {
     public Response getHiddenContent(
             @QueryParam("type") String type,
             @QueryParam("page") @DefaultValue("1") int page,
-            @QueryParam("limit") @DefaultValue("10") int limit) {
+            @QueryParam("limit") @DefaultValue("10") int limit,
+            @QueryParam("search") String search,
+            @QueryParam("sortBy") @DefaultValue("updatedAt") String sortBy,
+            @QueryParam("order") @DefaultValue("desc") String order) {
 
         // Validate pagination parameters
         if (page < 1 || limit < 1 || limit > 100) {
@@ -57,14 +60,21 @@ public class AdminService {
         Map<String, Object> response = new HashMap<>();
         response.put("page", page);
         response.put("limit", limit);
+        response.put("search", search);
+        response.put("sortBy", sortBy);
+        response.put("order", order);
 
         switch (type.toLowerCase()) {
             case "publications":
-                List<Publication> publications = publicationBean.getHiddenPublications(page, limit);
-                long totalPublications = publicationBean.countHiddenPublications();
+                List<Publication> publications = publicationBean.getHiddenPublications(page, limit, search, sortBy, order);
+                long totalPublications = publicationBean.countHiddenPublications(search);
                 
                 List<PublicationDTO> publicationDTOs = publications.stream()
-                        .map(PublicationDTO::from)
+                        .map(p -> {
+                            PublicationDTO dto = PublicationDTO.from(p);
+                            dto.setTags(TagDTO.from(p.getTags()));
+                            return dto;
+                        })
                         .collect(Collectors.toList());
                 
                 response.put("type", "publications");
@@ -73,8 +83,8 @@ public class AdminService {
                 break;
 
             case "comments":
-                List<Comment> comments = commentBean.getHiddenComments(page, limit);
-                long totalComments = commentBean.countHiddenComments();
+                List<Comment> comments = commentBean.getHiddenComments(page, limit, search, sortBy, order);
+                long totalComments = commentBean.countHiddenComments(search);
                 
                 List<CommentDTO> commentDTOs = comments.stream()
                         .map(CommentDTO::from)
@@ -86,8 +96,8 @@ public class AdminService {
                 break;
 
             case "tags":
-                List<Tag> tags = tagBean.getHiddenTags(page, limit);
-                long totalTags = tagBean.countHiddenTags();
+                List<Tag> tags = tagBean.getHiddenTags(page, limit, search, sortBy, order);
+                long totalTags = tagBean.countHiddenTags(search);
                 
                 List<TagDTO> tagDTOs = tags.stream()
                         .map(TagDTO::from)

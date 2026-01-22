@@ -112,17 +112,44 @@ public class CommentBean {
         return comment;
     }
 
-    // EP21 - Get hidden comments with pagination
-    public List<Comment> getHiddenComments(int page, int limit) {
-        return em.createNamedQuery("getHiddenComments", Comment.class)
-                .setFirstResult((page - 1) * limit)
-                .setMaxResults(limit)
-                .getResultList();
+    // EP21 - Get hidden comments with pagination, search, and sorting
+    public List<Comment> getHiddenComments(int page, int limit, String search, String sortBy, String order) {
+        String orderDir = order != null && order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortField = sortBy != null && sortBy.equals("createdAt") ? "c.createdAt" : "COALESCE(c.updatedAt, c.createdAt)";
+        
+        String jpql = "SELECT c FROM Comment c LEFT JOIN FETCH c.author LEFT JOIN FETCH c.publication WHERE c.visible = false";
+        
+        if (search != null && !search.isBlank()) {
+            jpql += " AND (LOWER(c.content) LIKE LOWER(:search) OR LOWER(c.author.name) LIKE LOWER(:search))";
+        }
+        
+        jpql += " ORDER BY " + sortField + " " + orderDir;
+        
+        var query = em.createQuery(jpql, Comment.class);
+        
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+        
+        return query.setFirstResult((page - 1) * limit)
+                    .setMaxResults(limit)
+                    .getResultList();
     }
 
-    public long countHiddenComments() {
-        return em.createQuery("SELECT COUNT(c) FROM Comment c WHERE c.visible = false", Long.class)
-                .getSingleResult();
+    public long countHiddenComments(String search) {
+        String jpql = "SELECT COUNT(c) FROM Comment c WHERE c.visible = false";
+        
+        if (search != null && !search.isBlank()) {
+            jpql += " AND (LOWER(c.content) LIKE LOWER(:search) OR LOWER(c.author.name) LIKE LOWER(:search))";
+        }
+        
+        var query = em.createQuery(jpql, Long.class);
+        
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+        
+        return query.getSingleResult();
     }
 
     public void delete(long commentId) throws MyEntityNotFoundException {
