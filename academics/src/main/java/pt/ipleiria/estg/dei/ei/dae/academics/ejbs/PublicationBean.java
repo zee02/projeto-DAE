@@ -46,6 +46,9 @@ public class PublicationBean {
     @EJB
     private UserBean userBean;
 
+    @EJB
+    private EmailBean emailBean;
+
     private static final String UPLOAD_DIR = "/app/uploads";
 
     private final Jsonb jsonb = JsonbBuilder.create();
@@ -63,10 +66,9 @@ public class PublicationBean {
     }
 
     private String readUtf8(InputPart part) throws IOException {
-        return Normalizer.normalize(
-                part.getBodyAsString(),
-                Normalizer.Form.NFC
-        );
+        InputStream inputStream = part.getBody(InputStream.class, null);
+        String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        return Normalizer.normalize(content, Normalizer.Form.NFC);
     }
     public Publication create(MultipartFormDataInput input, String user_id) throws IOException {
 
@@ -473,6 +475,70 @@ public class PublicationBean {
         return query.getSingleResult();
     }
 
+    private void notifySubscribers(Publication publication, Map<String, Object> changes) {
+        System.out.println("🔔 Iniciando notificação de subscribers para publicação: " + publication.getTitle());
+        
+        // Inicializar tags para evitar LazyInitializationException
+        Hibernate.initialize(publication.getTags());
+        
+        System.out.println("📌 Publicação tem " + publication.getTags().size() + " tags");
+        
+        // Coletar todos os subscribers únicos de todas as tags da publicação
+        java.util.Set<User> subscribers = new java.util.HashSet<>();
+        
+        publication.getTags().forEach(tag -> {
+            System.out.println("📌 Processando tag: " + tag.getName());
+            Hibernate.initialize(tag.getSubscribers());
+            System.out.println("📌 Tag tem " + tag.getSubscribers().size() + " subscribers");
+            subscribers.addAll(tag.getSubscribers());
+        });
+        
+        System.out.println("📧 Total de subscribers únicos: " + subscribers.size());
+        
+        // Remover o autor da lista de subscribers (não notificar a si mesmo)
+        subscribers.remove(publication.getAuthor());
+        
+        System.out.println("📧 Subscribers após remover autor: " + subscribers.size());
+        
+        if (subscribers.isEmpty()) {
+            System.out.println("⚠️ Nenhum subscriber para notificar");
+            return;
+        }
+        
+        // Construir mensagem com as alterações
+        StringBuilder changesText = new StringBuilder();
+        changes.forEach((field, change) -> {
+            Map<String, Object> changeMap = (Map<String, Object>) change;
+            changesText.append(String.format("- %s: \"%s\" → \"%s\"\n", 
+                field, changeMap.get("old"), changeMap.get("new")));
+        });
+        
+        // Enviar email para cada subscriber
+        String subject = "Publicação Atualizada: " + publication.getTitle();
+        String message = String.format(
+            "Olá,\n\n" +
+            "A publicação \"%s\" foi atualizada por %s.\n\n" +
+            "Alterações realizadas:\n%s\n" +
+            "Acesse o sistema para ver mais detalhes.\n\n" +
+            "Atenciosamente,\n" +
+            "Sistema de Publicações Académicas",
+            publication.getTitle(),
+            publication.getAuthor().getName(),
+            changesText.toString()
+        );
+        
+        subscribers.forEach(subscriber -> {
+            try {
+                System.out.println("📧 Enviando email para: " + subscriber.getEmail());
+                emailBean.send(subscriber.getEmail(), subject, message);
+                System.out.println("✅ Email enviado com sucesso para: " + subscriber.getEmail());
+            } catch (Exception e) {
+                System.err.println("❌ Erro ao enviar email para " + subscriber.getEmail() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
+
     public Publication edit(Long publicationId, MultipartFormDataInput input, Long user_id) throws IOException {
 
         Map<String, List<InputPart>> formParts = input.getFormDataMap();
@@ -567,6 +633,11 @@ public class PublicationBean {
         Hibernate.initialize(publication.getComments());
         Hibernate.initialize(publication.getTags());
         Hibernate.initialize(publication.getRatings());
+        
+        // Notificar subscribers se houver alterações
+        if (!changes.isEmpty()) {
+            notifySubscribers(publication, changes);
+        }
         
         return publication;
     }
