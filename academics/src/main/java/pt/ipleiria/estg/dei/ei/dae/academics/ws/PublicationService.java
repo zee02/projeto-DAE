@@ -270,12 +270,30 @@ public class PublicationService {
     //EP20 - Ocultar ou mostrar publicação
     @PUT
     @Authenticated
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
     @Path("/{post_id}/visibility")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateVisibility(@PathParam("post_id") long post_id, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
-        Publication publication = publicationBean.updateVisibility(post_id, dto.getVisible());
+        Publication publication = publicationBean.findWithTags(post_id);
+        
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + post_id + " não encontrada");
+        }
+        
+        // Check if user is author or has admin/responsavel role
+        String userEmail = securityContext.getUserPrincipal().getName();
+        boolean isAuthor = publication.getAuthor().getEmail().equals(userEmail);
+        boolean isAdmin = securityContext.isUserInRole("Administrador");
+        boolean isResponsavel = securityContext.isUserInRole("Responsavel");
+        
+        if (!isAuthor && !isAdmin && !isResponsavel) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("error", "Não tem permissão para alterar a visibilidade desta publicação"))
+                    .build();
+        }
+        
+        publication = publicationBean.updateVisibility(post_id, dto.getVisible());
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Visibilidade da publicação atualizada com sucesso");
