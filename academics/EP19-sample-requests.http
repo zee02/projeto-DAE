@@ -1,0 +1,68 @@
+### EP19 - Hide all comments of a publication
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/visibility
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "visible": false
+}
+
+### EP19 - Show all comments of a publication
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/visibility
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "visible": true
+}
+
+### EP19 - Test 400 - Missing visible field
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/visibility
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{}
+
+### EP19 - Test 400 - Invalid visible type
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/visibility
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "visible": "yes"
+}
+
+### EP19 - Test 401 - No token
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/visibility
+Content-Type: application/json
+
+{
+  "visible": false
+}
+
+### EP19 - Test 403 - Colaborador token
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/visibility
+Content-Type: application/json
+Authorization: Bearer {{colaborador_token}}
+
+{
+  "visible": false
+}
+
+### EP19 - Test 404 - Post not found
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/99999/comments/visibility
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "visible": false
+}
+
+### EP19 - Hide single comment (for comparison)
+PUT http://localhost:8080/academics-1.0-SNAPSHOT/api/posts/1/comments/101/visibility
+Content-Type: application/json
+Authorization: Bearer {{admin_token}}
+
+{
+  "visible": false
+}
