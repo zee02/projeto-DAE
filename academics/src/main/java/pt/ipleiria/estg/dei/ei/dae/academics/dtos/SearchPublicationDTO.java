@@ -9,6 +9,8 @@ public class SearchPublicationDTO {
     private List<Long> tags;
     private String dateFrom;
     private String dateTo;
+    private Integer page;
+    private Integer limit;
 
     public SearchPublicationDTO() {
     }
@@ -59,5 +61,21 @@ public class SearchPublicationDTO {
 
     public void setDateTo(String dateTo) {
         this.dateTo = dateTo;
+    }
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
     }
 }

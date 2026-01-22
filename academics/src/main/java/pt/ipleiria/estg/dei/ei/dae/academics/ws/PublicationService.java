@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.ei.dae.academics.ws;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -57,6 +58,10 @@ public class PublicationService {
     @Context
     private SecurityContext securityContext;
 
+    @Inject
+    public PublicationService() {
+    }
+
     // EP06 - Consultar Públicas
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -88,16 +93,10 @@ public class PublicationService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchPublications(SearchPublicationDTO searchDTO) {
-        List<Publication> publications = publicationBean.searchPublications(
-                searchDTO.getTitle(),
-                searchDTO.getAuthorId(),
-                searchDTO.getScientificArea(),
-                searchDTO.getTags(),
-                searchDTO.getDateFrom(),
-                searchDTO.getDateTo()
-        );
 
-        List<PublicationDTO> dtos = publications.stream()
+        List<Publication> publications = publicationBean.searchPublications(searchDTO);
+
+        List<PublicationDTO> data = publications.stream()
                 .map(p -> {
                     PublicationDTO dto = PublicationDTO.from(p);
                     dto.setTags(TagDTO.from(p.getTags()));
@@ -105,8 +104,20 @@ public class PublicationService {
                 })
                 .toList();
 
-        return Response.ok(dtos).build();
+        int page = searchDTO.getPage();
+        int limit = searchDTO.getLimit();
+        int total = data.size(); // ⚠️ ver nota abaixo
+
+        Map<String, Object> response = Map.of(
+                "data", data,
+                "total", total,
+                "page", page,
+                "limit", limit
+        );
+
+        return Response.ok(response).build();
     }
+
 
     //EP10 - Ordenar lista de publicações
     @POST
