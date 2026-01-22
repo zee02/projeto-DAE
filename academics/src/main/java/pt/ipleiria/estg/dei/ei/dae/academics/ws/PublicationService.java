@@ -410,7 +410,10 @@ public class PublicationService {
 
         Long user_id = Long.parseLong(securityContext.getUserPrincipal().getName());
 
-        Publication publication = publicationBean.edit(id, input, user_id);
+        // Check if user is admin (only admins can edit any publication)
+        boolean isAdmin = securityContext.isUserInRole("Administrador");
+
+        Publication publication = publicationBean.edit(id, input, user_id, isAdmin);
 
         return Response.ok(PublicationDTO.from(publication)).build();
     }

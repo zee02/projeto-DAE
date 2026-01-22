@@ -277,7 +277,7 @@ public class PublicationBean {
                 }
             }
         }
-        
+
         List<PublicationDTO> data = publications.stream()
                 .map(p -> {
                     PublicationDTO dto = PublicationDTO.from(p);
@@ -395,7 +395,7 @@ public class PublicationBean {
                             """, Publication.class)
                     .setParameter("publications", publications)
                     .getResultList();
-            
+
             // Initialize authors of comments
             for (Publication p : publications) {
                 for (var comment : p.getComments()) {
@@ -694,7 +694,7 @@ public class PublicationBean {
         });
     }
 
-    public Publication edit(Long publicationId, MultipartFormDataInput input, Long user_id) throws IOException {
+    public Publication edit(Long publicationId, MultipartFormDataInput input, Long user_id, boolean isAdmin) throws IOException {
 
         Map<String, List<InputPart>> formParts = input.getFormDataMap();
 
@@ -703,8 +703,9 @@ public class PublicationBean {
             throw new WebApplicationException("Publication not found", Response.Status.NOT_FOUND);
         }
 
-        // (Opcional) garantir que só o autor pode editar
-        if (publication.getAuthor().getId() != user_id) {
+        // Apenas o autor ou admin podem editar
+        // Responsável NÃO tem permissão para editar publicações de outros
+        if (publication.getAuthor().getId() != user_id && !isAdmin) {
             throw new WebApplicationException("Unauthorized", Response.Status.FORBIDDEN);
         }
 
