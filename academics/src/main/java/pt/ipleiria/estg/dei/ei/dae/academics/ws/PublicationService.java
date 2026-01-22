@@ -62,22 +62,32 @@ public class PublicationService {
     @Produces(MediaType.APPLICATION_JSON)
     public List<PublicationDTO> getAllPublicPosts() {
         List<Publication> publications;
+        Long currentUserId = null;
         
         // Se está autenticado, retorna todas as publicações
         // Se não está autenticado, retorna apenas as públicas
         System.out.println("🔍 getAllPublicPosts - UserPrincipal: " + securityContext.getUserPrincipal());
         if (securityContext.getUserPrincipal() != null) {
             System.out.println("✅ User authenticated - calling getAllPublications()");
+            currentUserId = Long.parseLong(securityContext.getUserPrincipal().getName());
             publications = publicationBean.getAllPublications();
         } else {
             System.out.println("❌ User NOT authenticated - calling getAllPublic() (filters confidential)");
             publications = publicationBean.getAllPublic();
         }
         
+        Long finalUserId = currentUserId;
         return publications.stream()
                 .map(publication -> {
                     PublicationDTO dto = PublicationDTO.from(publication);
                     dto.setTags(TagDTO.from(publication.getTags())); // Include tags
+                    
+                    // Include user's rating if authenticated
+                    if (finalUserId != null) {
+                        Integer userRating = publicationBean.getUserRating(publication.getId(), finalUserId);
+                        dto.setUserRating(userRating);
+                    }
+                    
                     return dto;
                 })
                 .toList();
