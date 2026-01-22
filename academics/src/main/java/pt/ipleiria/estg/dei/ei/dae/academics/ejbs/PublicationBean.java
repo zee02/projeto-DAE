@@ -113,7 +113,28 @@ public class PublicationBean {
 
 
     public List<Publication> getAllPublic() {
-        return em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
+        List<Publication> publications = em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
+        
+        // Fetch comments in a separate query to avoid cartesian product
+        if (!publications.isEmpty()) {
+            em.createQuery("""
+                        SELECT DISTINCT p
+                        FROM Publication p
+                        LEFT JOIN FETCH p.comments
+                        WHERE p IN :publications
+                    """, Publication.class)
+                    .setParameter("publications", publications)
+                    .getResultList();
+            
+            // Initialize authors of comments
+            for (Publication p : publications) {
+                for (var comment : p.getComments()) {
+                    Hibernate.initialize(comment.getAuthor());
+                }
+            }
+        }
+        
+        return publications;
     }
 
     public Publication findWithTags(long id) {
@@ -159,10 +180,30 @@ public class PublicationBean {
             return new PaginatedPublicationsDTO<>(List.of(), total);
         }
 
-        List<PublicationDTO> data = em.createNamedQuery("getMyPostsWithTags", Publication.class)
+        List<Publication> publications = em.createNamedQuery("getMyPostsWithTags", Publication.class)
                 .setParameter("ids", ids)
-                .getResultList()
-                .stream()
+                .getResultList();
+        
+        // Fetch comments in a separate query to avoid cartesian product
+        if (!publications.isEmpty()) {
+            em.createQuery("""
+                        SELECT DISTINCT p
+                        FROM Publication p
+                        LEFT JOIN FETCH p.comments
+                        WHERE p IN :publications
+                    """, Publication.class)
+                    .setParameter("publications", publications)
+                    .getResultList();
+            
+            // Initialize authors of comments
+            for (Publication p : publications) {
+                for (var comment : p.getComments()) {
+                    Hibernate.initialize(comment.getAuthor());
+                }
+            }
+        }
+        
+        List<PublicationDTO> data = publications.stream()
                 .map(p -> {
                     PublicationDTO dto = PublicationDTO.from(p);
                     dto.setTags(
@@ -237,6 +278,13 @@ public class PublicationBean {
                             """, Publication.class)
                     .setParameter("publications", publications)
                     .getResultList();
+            
+            // Initialize authors of comments
+            for (Publication p : publications) {
+                for (var comment : p.getComments()) {
+                    Hibernate.initialize(comment.getAuthor());
+                }
+            }
         }
 
         return publications;
@@ -316,9 +364,10 @@ public class PublicationBean {
 
         List<Publication> results = query.getResultList();
 
-        // Inicializar tags manualmente para evitar LazyInitializationException
+        // Inicializar tags e comentários manualmente para evitar LazyInitializationException
         for (Publication p : results) {
-            p.getTags().size(); // Força o carregamento da coleção
+            p.getTags().size(); // Força o carregamento da coleção de tags
+            p.getComments().size(); // Força o carregamento da coleção de comentários
         }
 
         return results;

@@ -58,6 +58,11 @@ public class PublicationDTO implements Serializable {
         dto.tags = new LinkedList<>();
         dto.createdAt = p.getCreatedAt();
         dto.updatedAt = p.getUpdatedAt();
+        
+        // Include comments if they are loaded
+        if (p.getComments() != null && !p.getComments().isEmpty()) {
+            dto.comments = CommentDTO.from(p.getComments());
+        }
 
         return dto;
     }
