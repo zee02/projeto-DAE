@@ -72,6 +72,20 @@ public class CommentBean {
         em.merge(publication);
         em.flush();
 
+        // Registrar no histórico
+        try {
+            String truncatedComment = comment.length() > 150 
+                ? comment.substring(0, 150) + "..." 
+                : comment;
+            publicationBean.seedHistory(
+                publication.getId(),
+                user.getEmail(),
+                java.util.Map.of("comment", "Comentário de " + user.getName() + ": " + truncatedComment)
+            );
+        } catch (Exception e) {
+            // Não falhar se histórico não for gravado
+        }
+
         // Notificar subscritores das tags da publicação
         notifyTagSubscribers(publication, user, comment);
 
@@ -123,6 +137,17 @@ public class CommentBean {
                 .setParameter("postId", postId)
                 .executeUpdate();
 
+        // Registrar no histórico
+        try {
+            publicationBean.seedHistory(
+                postId,
+                "system", // Usar email de sistema ou do usuário logado se disponível
+                java.util.Map.of("commentVisibility", 
+                    visible ? "Todos os comentários tornados visíveis" : "Todos os comentários ocultados")
+            );
+        } catch (Exception e) {
+            // Não falhar se histórico não for gravado
+        }
 
         return updatedAt;
     }
@@ -146,6 +171,18 @@ public class CommentBean {
         comment.setVisible(visible);
         comment.setUpdatedAt(new Date());
 
+        // Registrar no histórico
+        try {
+            publicationBean.seedHistory(
+                postId,
+                comment.getAuthor().getEmail(),
+                java.util.Map.of("commentVisibility", 
+                    visible ? "Comentário de " + comment.getAuthor().getName() + " tornado visível" 
+                            : "Comentário de " + comment.getAuthor().getName() + " ocultado")
+            );
+        } catch (Exception e) {
+            // Não falhar se histórico não for gravado
+        }
 
         return comment;
     }

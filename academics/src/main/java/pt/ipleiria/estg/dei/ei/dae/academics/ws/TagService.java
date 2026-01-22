@@ -23,7 +23,6 @@ import java.util.Map;
 @Path("tags")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Authenticated
 public class TagService {
 
     @EJB
@@ -37,13 +36,13 @@ public class TagService {
 
     // EP32 - Consultar Todas as tags
     @GET
-    @RolesAllowed({"Administrador", "Responsavel", "Colaborador"})
     public List<TagDTO> getAllTags() {
         return TagDTO.from(tagBean.findAll());
     }
 
     // EP16 - Criar uma nova tag
     @POST
+    @Authenticated
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response createTag(@Valid TagDTO dto) {
         String userId = securityContext.getUserPrincipal().getName();
@@ -59,6 +58,7 @@ public class TagService {
     // EP11 - Subscrever uma tag
     @POST
     @Path("/{tag_id}/subscribe")
+    @Authenticated
     @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
     public Response subscribeToTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
         String userId = securityContext.getUserPrincipal().getName();
@@ -80,6 +80,7 @@ public class TagService {
     // Cancelar subscrição de uma tag
     @DELETE
     @Path("/{tag_id}/subscribe")
+    @Authenticated
     @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
     public Response unsubscribeFromTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
         String userId = securityContext.getUserPrincipal().getName();
@@ -101,6 +102,7 @@ public class TagService {
     // EP17 - Eliminar tag
     @DELETE
     @Path("/{tag_id}")
+    @Authenticated
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response deleteTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
         tagBean.delete(tagId);
@@ -114,6 +116,7 @@ public class TagService {
     // Ocultar ou mostrar tag
     @PUT
     @Path("/{tag_id}/visibility")
+    @Authenticated
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response updateVisibility(@PathParam("tag_id") long tagId, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
         Tag tag = tagBean.updateVisibility(tagId, dto.getVisible());

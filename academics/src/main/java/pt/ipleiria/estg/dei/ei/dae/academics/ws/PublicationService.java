@@ -59,10 +59,19 @@ public class PublicationService {
 
     // EP06 - Consultar Públicas
     @GET
-    @Authenticated
     @Produces(MediaType.APPLICATION_JSON)
     public List<PublicationDTO> getAllPublicPosts() {
-        return publicationBean.getAllPublic().stream()
+        List<Publication> publications;
+        
+        // Se está autenticado, retorna todas as publicações
+        // Se não está autenticado, retorna apenas as públicas
+        if (securityContext.getUserPrincipal() != null) {
+            publications = publicationBean.getAllPublications();
+        } else {
+            publications = publicationBean.getAllPublic();
+        }
+        
+        return publications.stream()
                 .map(publication -> {
                     PublicationDTO dto = PublicationDTO.from(publication);
                     dto.setTags(TagDTO.from(publication.getTags())); // Include tags
@@ -102,8 +111,6 @@ public class PublicationService {
     //EP10 - Ordenar lista de publicações
     @POST
     @Path("/sort")
-    @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
     @Consumes("application/json")
     @Produces("application/json")
     public Response getSortedPublications(SortRequestDTO sortRequest) {
@@ -132,7 +139,15 @@ public class PublicationService {
                     .build();
         }
 
-        List<Publication> publications = publicationBean.getAllPublicSorted(sortBy, order);
+        List<Publication> publications;
+        
+        // Se está autenticado, retorna todas as publicações ordenadas
+        // Se não está autenticado, retorna apenas as públicas ordenadas
+        if (securityContext.getUserPrincipal() != null) {
+            publications = publicationBean.getAllPublicationsSorted(sortBy, order);
+        } else {
+            publications = publicationBean.getAllPublicSorted(sortBy, order);
+        }
 
         List<PublicationDTO> dtos = publications.stream()
                 .map(p -> {
@@ -320,9 +335,10 @@ public class PublicationService {
         String userId = securityContext.getUserPrincipal().getName();
 
         List<PublicationEdit> edits = publicationBean.getPostHistory(postId, userId, page, limit);
+        long total = publicationBean.countPostHistory(postId);
 
         // devolve JSON no formato do enunciado (sem DTO)
-        List<Map<String, Object>> response = edits.stream().map(e -> {
+        List<Map<String, Object>> data = edits.stream().map(e -> {
             JsonStructure changes;
             try (JsonReader reader = Json.createReader(new StringReader(e.getChangesJson()))) {
                 changes = reader.read();
@@ -339,6 +355,13 @@ public class PublicationService {
                     "changes", changes
             );
         }).toList();
+
+        Map<String, Object> response = Map.of(
+                "data", data,
+                "total", total,
+                "page", page,
+                "limit", limit
+        );
 
         return Response.ok(response).build();
     }

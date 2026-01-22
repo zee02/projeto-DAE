@@ -15,6 +15,14 @@ import java.sql.Timestamp;
                         WHERE e.publication.id = :postId
                         ORDER BY e.editedAt DESC
                         """
+        ),
+        @NamedQuery(
+                name = "countPublicationHistory",
+                query = """
+                        SELECT COUNT(e)
+                        FROM PublicationEdit e
+                        WHERE e.publication.id = :postId
+                        """
         )
 })
 public class PublicationEdit implements Serializable {

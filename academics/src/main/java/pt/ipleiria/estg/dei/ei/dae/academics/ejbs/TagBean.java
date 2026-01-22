@@ -82,6 +82,8 @@ public class TagBean {
             );
         }
 
+        java.util.List<String> addedTags = new java.util.ArrayList<>();
+
         for (Long tagId : tagIds.getTags()) {
 
             Tag tag = em.find(Tag.class, tagId);
@@ -95,6 +97,20 @@ public class TagBean {
             if (!publication.getTags().contains(tag)) {
                 publication.addTag(tag);
                 tag.getPublications().add(publication);
+                addedTags.add(tag.getName());
+            }
+        }
+
+        // Registrar no histórico se tags foram adicionadas
+        if (!addedTags.isEmpty()) {
+            try {
+                publicationBean.seedHistory(
+                    postId,
+                    publication.getAuthor().getEmail(),
+                    java.util.Map.of("tags", "Tags adicionadas: " + String.join(", ", addedTags))
+                );
+            } catch (Exception e) {
+                // Não falhar se histórico não for gravado
             }
         }
     }
@@ -107,6 +123,8 @@ public class TagBean {
             throw new MyEntityNotFoundException("Publication with id " + postId + " not found.");
         }
 
+        java.util.List<String> removedTags = new java.util.ArrayList<>();
+
         for (Long tagId : tagIds.getTags()) {
 
             Tag tag = em.find(Tag.class, tagId);
@@ -118,6 +136,20 @@ public class TagBean {
             if (publication.getTags().contains(tag)) {
                 publication.removeTag(tag);
                 tag.getPublications().remove(publication);
+                removedTags.add(tag.getName());
+            }
+        }
+
+        // Registrar no histórico se tags foram removidas
+        if (!removedTags.isEmpty()) {
+            try {
+                publicationBean.seedHistory(
+                    postId,
+                    publication.getAuthor().getEmail(),
+                    java.util.Map.of("tags", "Tags removidas: " + String.join(", ", removedTags))
+                );
+            } catch (Exception e) {
+                // Não falhar se histórico não for gravado
             }
         }
     }
