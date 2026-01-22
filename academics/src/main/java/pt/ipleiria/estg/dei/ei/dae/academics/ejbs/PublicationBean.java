@@ -408,7 +408,7 @@ public class PublicationBean {
     }
 
     // EP20 - Ocultar ou mostrar publicação
-    public Publication updateVisibility(long postId, boolean visible) throws MyEntityNotFoundException {
+    public Publication updateVisibility(long postId, boolean visible, String userId) throws MyEntityNotFoundException {
         Publication publication = em.find(Publication.class, postId);
 
         if (publication == null) {
@@ -432,6 +432,19 @@ public class PublicationBean {
             recordEdit(publication, author, java.util.Map.of(
                 "is_visible", java.util.Map.of("old", oldVisible, "new", visible)
             ));
+            
+            // Registar no histórico de atividades do utilizador
+            if (userId != null) {
+                User user = userBean.find(userId);
+                if (user != null) {
+                    String activityType = visible ? "SHOW_PUBLICATION" : "HIDE_PUBLICATION";
+                    String description = visible 
+                        ? "Tornou visível a publicação: " + publication.getTitle() 
+                        : "Ocultou a publicação: " + publication.getTitle();
+                    String details = "Publicação ID: " + postId + ", Autor: " + publication.getAuthor().getName();
+                    userBean.logActivity(user, activityType, description, details);
+                }
+            }
         }
 
         return publication;
