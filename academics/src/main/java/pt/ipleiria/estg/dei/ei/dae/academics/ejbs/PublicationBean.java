@@ -400,33 +400,51 @@ public class PublicationBean {
             throw new WebApplicationException("Unauthorized", Response.Status.FORBIDDEN);
         }
 
+        User editor = userBean.find(user_id.toString());
+        Map<String, Object> changes = new java.util.HashMap<>();
+
         // Atualizar título
         if (formParts.containsKey("title")) {
-            String title = formParts.get("title").get(0).getBodyAsString();
+            String title = readUtf8(formParts.get("title").get(0));
+            String oldTitle = publication.getTitle();
+            if (!title.equals(oldTitle)) {
+                changes.put("title", Map.of("old", oldTitle, "new", title));
+            }
             publication.setTitle(title);
         }
 
         // Atualizar área científica
         if (formParts.containsKey("scientific_area")) {
-            String area = formParts.get("scientific_area").get(0).getBodyAsString();
+            String area = readUtf8(formParts.get("scientific_area").get(0));
+            String oldArea = publication.getScientificArea();
+            if (!area.equals(oldArea)) {
+                changes.put("scientific_area", Map.of("old", oldArea, "new", area));
+            }
             publication.setScientificArea(area);
         }
 
         // Atualizar resumo
         if (formParts.containsKey("summary")) {
-            String summary = formParts.get("summary").get(0).getBodyAsString();
+            String summary = readUtf8(formParts.get("summary").get(0));
             if (summary != null && !summary.isBlank()) {
+                String oldSummary = publication.getSummary();
+                if (!summary.equals(oldSummary)) {
+                    changes.put("summary", Map.of("old", oldSummary, "new", summary));
+                }
                 publication.setSummary(summary);
             }
         }
 
+        // Atualizar visibilidade
         if (formParts.containsKey("is_visible")) {
-            String isVisibleStr = formParts.get("is_visible").get(0).getBodyAsString();
+            String isVisibleStr = readUtf8(formParts.get("is_visible").get(0));
             boolean isVisible = Boolean.parseBoolean(isVisibleStr);
+            boolean oldVisible = publication.isVisible();
+            if (isVisible != oldVisible) {
+                changes.put("is_visible", Map.of("old", oldVisible, "new", isVisible));
+            }
             publication.setVisible(isVisible);
         }
-
-        publication.setVisible(publication.isVisible());
 
         // Atualizar ficheiro (opcional)
         if (formParts.containsKey("file")) {
@@ -434,17 +452,26 @@ public class PublicationBean {
             String fileName = PublicationUtils.getFileName(filePart.getHeaders());
             InputStream fileData = filePart.getBody(InputStream.class, null);
 
-            User author = userBean.find(user_id.toString());
-
             // Guardar ficheiro
             String uniqueFileName = UUID.randomUUID() + "_" + fileName;
             Path path = Paths.get(UPLOAD_DIR, uniqueFileName);
             Files.createDirectories(path.getParent());
             Files.copy(fileData, path, StandardCopyOption.REPLACE_EXISTING);
 
-
+            String oldFileName = publication.getFileName();
             publication.setFileKey(uniqueFileName);
             publication.setFileName(fileName);
+            if (!fileName.equals(oldFileName)) {
+                changes.put("file", Map.of("old", oldFileName != null ? oldFileName : "", "new", fileName));
+            }
+        }
+
+        // Update timestamp
+        publication.setUpdatedAt(new Timestamp(new Date().getTime()));
+
+        // Record edit history if there are changes
+        if (!changes.isEmpty()) {
+            recordEdit(publication, editor, changes);
         }
 
         publication = em.merge(publication);
