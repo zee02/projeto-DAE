@@ -292,14 +292,14 @@ public class UserService {
 
     // EP28 - Consultar histórico de atividade de qualquer utilizador
     @GET
-    @Path("/{user_id}/activity")
+    @Path("/{user_id}/activities")
     @Authenticated
     @RolesAllowed({"Administrador"})
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getUserActivity(
+    public Response getUserActivities(
             @PathParam("user_id") long userId,
             @QueryParam("page") @DefaultValue("1") int page,
-            @QueryParam("limit") @DefaultValue("10") int limit) {
+            @QueryParam("limit") @DefaultValue("20") int limit) {
 
         try {
             Map<String, Object> result = userBean.getUserActivity(userId, page, limit);
