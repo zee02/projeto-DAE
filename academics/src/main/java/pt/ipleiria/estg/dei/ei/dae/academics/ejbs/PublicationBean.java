@@ -442,9 +442,14 @@ public class PublicationBean {
             query.setParameter("search", "%" + search + "%");
         }
         
-        return query.setFirstResult((page - 1) * limit)
+        List<Publication> publications = query.setFirstResult((page - 1) * limit)
                     .setMaxResults(limit)
                     .getResultList();
+        
+        // Initialize comments to avoid LazyInitializationException
+        publications.forEach(p -> Hibernate.initialize(p.getComments()));
+        
+        return publications;
     }
 
     public long countHiddenPublications(String search) {
