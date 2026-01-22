@@ -74,6 +74,7 @@ public class Publication implements Serializable {
     @Column(name = "file_key")
     private String fileKey;
     private boolean isVisible; // Para controlo de visibilidade (EP20)
+    private boolean isConfidential = false; // Publicações confidenciais - apenas utilizadores autenticados
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date submissionDate;
@@ -194,6 +195,14 @@ public class Publication implements Serializable {
 
     public void setVisible(boolean visible) {
         isVisible = visible;
+    }
+
+    public boolean isConfidential() {
+        return isConfidential;
+    }
+
+    public void setConfidential(boolean confidential) {
+        isConfidential = confidential;
     }
 
     public Date getSubmissionDate() {
