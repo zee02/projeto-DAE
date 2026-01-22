@@ -91,6 +91,15 @@ public class UserService {
                 default:
                     return Response.status(Response.Status.BAD_REQUEST).entity("Role inválido").build();
             }
+            
+            // Log activity for the admin who created the user
+            String adminId = securityContext.getUserPrincipal().getName();
+            User admin = userBean.find(adminId);
+            if (admin != null) {
+                userBean.logActivity(admin, "CREATE_USER", 
+                    "Criou o utilizador: " + newUser.getName(), 
+                    String.format("Email: %s, Role: %s", newUser.getEmail(), dto.getRole()));
+            }
 
             return Response.status(Response.Status.CREATED).entity(UserDTO.from(newUser)).build();
 
@@ -106,7 +115,8 @@ public class UserService {
     @RolesAllowed({"Administrador"})
     public Response deleteUser(@PathParam("user_id") long userId) {
         try {
-            userBean.delete(userId);
+            String adminId = securityContext.getUserPrincipal().getName();
+            userBean.delete(userId, adminId);
             return Response.noContent().build(); // 204
         } catch (EntityNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -120,7 +130,8 @@ public class UserService {
     @RolesAllowed({"Administrador"})
     public Response activateUser(@PathParam("user_id") long userId) {
         try {
-            userBean.activate(userId);
+            String adminId = securityContext.getUserPrincipal().getName();
+            userBean.activate(userId, adminId);
             return Response.ok("{\"message\": \"Utilizador ativado com sucesso\", \"status\": \"active\"}").build();
         } catch (EntityNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).build(); // [cite: 836]
@@ -134,7 +145,8 @@ public class UserService {
     @RolesAllowed({"Administrador"})
     public Response deactivateUser(@PathParam("user_id") long userId) {
         try {
-            userBean.deactivate(userId);
+            String adminId = securityContext.getUserPrincipal().getName();
+            userBean.deactivate(userId, adminId);
             return Response.ok("{\"message\": \"Utilizador desativado com sucesso\", \"status\": \"inactive\"}").build();
         } catch (EntityNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).build(); // [cite: 836]
@@ -174,7 +186,8 @@ public class UserService {
     @RolesAllowed({"Administrador"})
     public Response updateUserRole(@PathParam("user_id") long userId, @Valid RoleDTO dto) {
         try {
-            User updatedUser = userBean.updateRole(userId, dto.getRole());
+            String adminId = securityContext.getUserPrincipal().getName();
+            User updatedUser = userBean.updateRole(userId, dto.getRole(), adminId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Papel do utilizador atualizado com sucesso");
@@ -194,7 +207,8 @@ public class UserService {
     @RolesAllowed({"Administrador"})
     public Response updateUser(@PathParam("user_id") long userId, @Valid UserDTO dto) {
         try {
-            User updatedUser = userBean.updateUser(userId, dto.getName(), dto.getEmail(), dto.getRole().toString());
+            String adminId = securityContext.getUserPrincipal().getName();
+            User updatedUser = userBean.updateUser(userId, dto.getName(), dto.getEmail(), dto.getRole().toString(), adminId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Dados atualizados com sucesso");

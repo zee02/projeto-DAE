@@ -68,11 +68,17 @@ public class TagBean {
         newTag.setCreatedAt(new java.util.Date());
         em.persist(newTag);
         em.flush(); // Força a geração do ID imediatamente
+        
+        // Log activity
+        userBean.logActivity(creator, "CREATE_TAG", 
+            "Criou a tag: " + newTag.getName(), 
+            "Tag ID: " + newTag.getId());
+        
         return newTag;
     }
 
 
-    public void associateTagToPublication(TagDTO tagIds, long postId)
+    public void associateTagToPublication(TagDTO tagIds, long postId, String userId)
             throws MyEntityNotFoundException {
 
         Publication publication = em.find(Publication.class, postId);
@@ -81,6 +87,9 @@ public class TagBean {
                     "Publication with id " + postId + " not found."
             );
         }
+
+        User user = userBean.find(userId);
+        List<String> tagNames = new ArrayList<>();
 
         for (Long tagId : tagIds.getTags()) {
 
@@ -95,17 +104,28 @@ public class TagBean {
             if (!publication.getTags().contains(tag)) {
                 publication.addTag(tag);
                 tag.getPublications().add(publication);
+                tagNames.add(tag.getName());
             }
+        }
+        
+        // Log activity
+        if (user != null && !tagNames.isEmpty()) {
+            userBean.logActivity(user, "ASSOCIATE_TAG", 
+                "Associou tag(s) à publicação: " + publication.getTitle(), 
+                "Tags: " + String.join(", ", tagNames));
         }
     }
 
 
-    public void dissociateTagsFromPublication(TagDTO tagIds, long postId) throws MyEntityNotFoundException {
+    public void dissociateTagsFromPublication(TagDTO tagIds, long postId, String userId) throws MyEntityNotFoundException {
 
         Publication publication = em.find(Publication.class, postId);
         if (publication == null) {
             throw new MyEntityNotFoundException("Publication with id " + postId + " not found.");
         }
+
+        User user = userBean.find(userId);
+        List<String> tagNames = new ArrayList<>();
 
         for (Long tagId : tagIds.getTags()) {
 
@@ -118,7 +138,15 @@ public class TagBean {
             if (publication.getTags().contains(tag)) {
                 publication.removeTag(tag);
                 tag.getPublications().remove(publication);
+                tagNames.add(tag.getName());
             }
+        }
+        
+        // Log activity
+        if (user != null && !tagNames.isEmpty()) {
+            userBean.logActivity(user, "DISSOCIATE_TAG", 
+                "Removeu tag(s) da publicação: " + publication.getTitle(), 
+                "Tags: " + String.join(", ", tagNames));
         }
     }
 
@@ -161,6 +189,11 @@ public class TagBean {
         user.subscribeTag(tag);
         tag.getSubscribers().add(user);
         
+        // Log activity
+        userBean.logActivity(user, "SUBSCRIBE_TAG", 
+            "Subscreveu a tag: " + tag.getName(), 
+            "Tag ID: " + tag.getId());
+        
         System.out.println("=== DEBUG: Subscrição bem-sucedida!");
         return tag;
     }
@@ -184,11 +217,16 @@ public class TagBean {
         user.unsubscribeTag(tag);
         tag.getSubscribers().remove(user);
 
+        // Log activity
+        userBean.logActivity(user, "UNSUBSCRIBE_TAG", 
+            "Cancelou subscrição da tag: " + tag.getName(), 
+            "Tag ID: " + tag.getId());
+
         return tag;
     }
 
     // EP17 - Eliminar tag
-    public void delete(long tagId) throws MyEntityNotFoundException {
+    public void delete(long tagId, String userId) throws MyEntityNotFoundException {
         Tag tag = em.find(Tag.class, tagId);
 
         if (tag == null) {
@@ -200,6 +238,8 @@ public class TagBean {
             throw new IllegalArgumentException("A tag não pode ser eliminada porque está em uso");
         }
 
+        String tagName = tag.getName(); // Save name before deletion
+
         // Remover subscrições de utilizadores (criar cópia para evitar ConcurrentModificationException)
         List<User> subscribersCopy = new ArrayList<>(tag.getSubscribers());
         for (User user : subscribersCopy) {
@@ -208,10 +248,18 @@ public class TagBean {
         }
 
         em.remove(tag);
+        
+        // Log activity
+        User deleter = userBean.find(userId);
+        if (deleter != null) {
+            userBean.logActivity(deleter, "DELETE_TAG", 
+                "Eliminou a tag: " + tagName, 
+                "Tag ID: " + tagId);
+        }
     }
 
     // Ocultar ou mostrar tag
-    public Tag updateVisibility(long tagId, boolean visible) throws MyEntityNotFoundException {
+    public Tag updateVisibility(long tagId, boolean visible, String userId) throws MyEntityNotFoundException {
         Tag tag = em.find(Tag.class, tagId);
 
         if (tag == null) {
@@ -219,6 +267,14 @@ public class TagBean {
         }
 
         tag.setVisible(visible);
+
+        // Log activity
+        User user = userBean.find(userId);
+        if (user != null) {
+            String activityType = visible ? "SHOW_TAG" : "HIDE_TAG";
+            String description = visible ? "Tornou visível a tag: " + tag.getName() : "Ocultou a tag: " + tag.getName();
+            userBean.logActivity(user, activityType, description, null);
+        }
 
         return tag;
     }
