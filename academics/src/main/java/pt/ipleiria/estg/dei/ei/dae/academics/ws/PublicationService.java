@@ -62,7 +62,13 @@ public class PublicationService {
     @Authenticated
     @Produces(MediaType.APPLICATION_JSON)
     public List<PublicationDTO> getAllPublicPosts() {
-        return PublicationDTO.from(publicationBean.getAllPublic());
+        return publicationBean.getAllPublic().stream()
+                .map(publication -> {
+                    PublicationDTO dto = PublicationDTO.from(publication);
+                    dto.setTags(TagDTO.from(publication.getTags())); // Include tags
+                    return dto;
+                })
+                .toList();
     }
 
     // EP09 - Pesquisar publicações
