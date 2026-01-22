@@ -223,17 +223,44 @@ public class TagBean {
         return tag;
     }
 
-    // EP21 - Get hidden tags with pagination
-    public List<Tag> getHiddenTags(int page, int limit) {
-        return em.createNamedQuery("getHiddenTags", Tag.class)
-                .setFirstResult((page - 1) * limit)
-                .setMaxResults(limit)
-                .getResultList();
+    // EP21 - Get hidden tags with pagination, search, and sorting
+    public List<Tag> getHiddenTags(int page, int limit, String search, String sortBy, String order) {
+        String orderDir = order != null && order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortField = "t.name"; // Tags only sort by name
+        
+        String jpql = "SELECT t FROM Tag t WHERE t.visible = false";
+        
+        if (search != null && !search.isBlank()) {
+            jpql += " AND LOWER(t.name) LIKE LOWER(:search)";
+        }
+        
+        jpql += " ORDER BY " + sortField + " " + orderDir;
+        
+        var query = em.createQuery(jpql, Tag.class);
+        
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+        
+        return query.setFirstResult((page - 1) * limit)
+                    .setMaxResults(limit)
+                    .getResultList();
     }
 
-    public long countHiddenTags() {
-        return em.createQuery("SELECT COUNT(t) FROM Tag t WHERE t.visible = false", Long.class)
-                .getSingleResult();
+    public long countHiddenTags(String search) {
+        String jpql = "SELECT COUNT(t) FROM Tag t WHERE t.visible = false";
+        
+        if (search != null && !search.isBlank()) {
+            jpql += " AND LOWER(t.name) LIKE LOWER(:search)";
+        }
+        
+        var query = em.createQuery(jpql, Long.class);
+        
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+        
+        return query.getSingleResult();
     }
 
 }

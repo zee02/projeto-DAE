@@ -140,6 +140,7 @@ public class PublicationBean {
     public Publication findWithTags(long id) {
         Publication p = em.find(Publication.class, id);
         Hibernate.initialize(p.getTags());
+        Hibernate.initialize(p.getComments());
         return p;
     }
 
@@ -422,17 +423,44 @@ public class PublicationBean {
                 .getResultList();
     }
 
-    // EP21 - Get hidden publications with pagination
-    public List<Publication> getHiddenPublications(int page, int limit) {
-        return em.createNamedQuery("getHiddenPublications", Publication.class)
-                .setFirstResult((page - 1) * limit)
-                .setMaxResults(limit)
-                .getResultList();
+    // EP21 - Get hidden publications with pagination, search, and sorting
+    public List<Publication> getHiddenPublications(int page, int limit, String search, String sortBy, String order) {
+        String orderDir = order != null && order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
+        String sortField = sortBy != null && sortBy.equals("title") ? "p.title" : "p.updatedAt";
+        
+        String jpql = "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = false";
+        
+        if (search != null && !search.isBlank()) {
+            jpql += " AND (LOWER(p.title) LIKE LOWER(:search) OR LOWER(p.scientificArea) LIKE LOWER(:search) OR LOWER(p.author.name) LIKE LOWER(:search))";
+        }
+        
+        jpql += " ORDER BY " + sortField + " " + orderDir;
+        
+        var query = em.createQuery(jpql, Publication.class);
+        
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+        
+        return query.setFirstResult((page - 1) * limit)
+                    .setMaxResults(limit)
+                    .getResultList();
     }
 
-    public long countHiddenPublications() {
-        return em.createQuery("SELECT COUNT(p) FROM Publication p WHERE p.isVisible = false", Long.class)
-                .getSingleResult();
+    public long countHiddenPublications(String search) {
+        String jpql = "SELECT COUNT(DISTINCT p) FROM Publication p WHERE p.isVisible = false";
+        
+        if (search != null && !search.isBlank()) {
+            jpql += " AND (LOWER(p.title) LIKE LOWER(:search) OR LOWER(p.scientificArea) LIKE LOWER(:search) OR LOWER(p.author.name) LIKE LOWER(:search))";
+        }
+        
+        var query = em.createQuery(jpql, Long.class);
+        
+        if (search != null && !search.isBlank()) {
+            query.setParameter("search", "%" + search + "%");
+        }
+        
+        return query.getSingleResult();
     }
 
     public Publication edit(Long publicationId, MultipartFormDataInput input, Long user_id) throws IOException {
