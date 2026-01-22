@@ -11,6 +11,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -51,9 +52,18 @@ public class CommentBean {
         newComent.setPublication(publication);
         newComent.setCreatedAt(new Date());
 
-        publication.getComments().add(newComent);
         em.persist(newComent);
+
+        // Add comment to publication's list and recalculate
+        publication.getComments().add(newComent);
         publication.recalculateComments();
+
+        // Mark the publication as modified by updating a timestamp
+        publication.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+        // Merge to ensure the publication changes are persisted
+        em.merge(publication);
+        em.flush();
 
         return newComent;
 
@@ -74,6 +84,7 @@ public class CommentBean {
                 .setParameter("updatedAt", updatedAt)
                 .setParameter("postId", postId)
                 .executeUpdate();
+
 
         return updatedAt;
     }
@@ -96,6 +107,7 @@ public class CommentBean {
 
         comment.setVisible(visible);
         comment.setUpdatedAt(new Date());
+
 
         return comment;
     }
@@ -124,5 +136,12 @@ public class CommentBean {
         publication.getComments().remove(comment);
         em.remove(comment);
         publication.recalculateComments();
+
+        // Mark the publication as modified by updating a timestamp
+        publication.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
+        // Merge to ensure the publication changes are persisted
+        em.merge(publication);
+        em.flush();
     }
 }
