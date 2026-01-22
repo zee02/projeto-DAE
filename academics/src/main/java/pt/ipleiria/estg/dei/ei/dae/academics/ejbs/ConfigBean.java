@@ -119,9 +119,9 @@ public class ConfigBean {
             tagsIds.add(1L);
             tagsIds.add(2L);
             tags.setTags(tagsIds);
-            tagBean.associateTagToPublication(tags, 1);
-            tagBean.associateTagToPublication(tags, 25);
-            tagBean.associateTagToPublication(tags, 29);
+            tagBean.associateTagToPublication(tags, 1, "1");
+            tagBean.associateTagToPublication(tags, 25, "1");
+            tagBean.associateTagToPublication(tags, 29, "1");
 
 
             System.out.println("Users populated successfully!");

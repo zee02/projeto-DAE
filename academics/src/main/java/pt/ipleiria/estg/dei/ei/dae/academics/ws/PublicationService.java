@@ -205,7 +205,8 @@ public class PublicationService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response associateTag(@PathParam("post_id") long post_id, TagDTO tags) throws MyEntityNotFoundException {
-        tagBean.associateTagToPublication(tags, post_id);
+        String userId = securityContext.getUserPrincipal().getName();
+        tagBean.associateTagToPublication(tags, post_id, userId);
         Publication publication = publicationBean.findWithTags(post_id);
         var publicationDTO = PublicationDTO.from(publication);
         publicationDTO.setTags(TagDTO.from(publication.getTags()));
@@ -219,7 +220,8 @@ public class PublicationService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response disassociateTag(@PathParam("post_id") long post_id, TagDTO tags) throws MyEntityNotFoundException {
-        tagBean.dissociateTagsFromPublication(tags, post_id);
+        String userId = securityContext.getUserPrincipal().getName();
+        tagBean.dissociateTagsFromPublication(tags, post_id, userId);
         Publication publication = publicationBean.findWithTags(post_id);
         var publicationDTO = PublicationDTO.from(publication);
         publicationDTO.setTags(TagDTO.from(publication.getTags()));

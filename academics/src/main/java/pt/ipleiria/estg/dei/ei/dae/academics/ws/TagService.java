@@ -103,7 +103,8 @@ public class TagService {
     @Path("/{tag_id}")
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response deleteTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
-        tagBean.delete(tagId);
+        String userId = securityContext.getUserPrincipal().getName();
+        tagBean.delete(tagId, userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Tag eliminada com sucesso");
@@ -116,7 +117,8 @@ public class TagService {
     @Path("/{tag_id}/visibility")
     @RolesAllowed({"Responsavel", "Administrador"})
     public Response updateVisibility(@PathParam("tag_id") long tagId, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
-        Tag tag = tagBean.updateVisibility(tagId, dto.getVisible());
+        String userId = securityContext.getUserPrincipal().getName();
+        Tag tag = tagBean.updateVisibility(tagId, dto.getVisible(), userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Visibilidade da tag atualizada com sucesso");
