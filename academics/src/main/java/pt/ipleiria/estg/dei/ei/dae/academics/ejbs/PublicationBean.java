@@ -23,6 +23,7 @@ import jakarta.json.bind.JsonbBuilder;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.PublicationEdit;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
@@ -205,7 +206,7 @@ public class PublicationBean {
 
         String orderDirection = order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
 
-        // 1️⃣ Buscar publicações + tags
+
         String jpqlPublications = """
                     SELECT DISTINCT p
                     FROM Publication p
@@ -214,11 +215,9 @@ public class PublicationBean {
                     ORDER BY p.%s %s
                 """.formatted(fieldName, orderDirection);
 
-        List<Publication> publications =
-                em.createQuery(jpqlPublications, Publication.class)
-                        .getResultList();
+        List<Publication> publications = em.createQuery(jpqlPublications, Publication.class).getResultList();
 
-        // 2️⃣ Buscar comentários (sem fetch múltiplo)
+
         if (!publications.isEmpty()) {
             em.createQuery("""
                                 SELECT DISTINCT p
@@ -377,5 +376,132 @@ public class PublicationBean {
                 .getSingleResult();
     }
 
+    public Publication edit(Long publicationId, MultipartFormDataInput input, Long user_id) throws IOException {
+
+        Map<String, List<InputPart>> formParts = input.getFormDataMap();
+
+        Publication publication = em.find(Publication.class, publicationId);
+        if (publication == null) {
+            throw new WebApplicationException("Publication not found", Response.Status.NOT_FOUND);
+        }
+
+        // (Opcional) garantir que só o autor pode editar
+        if (publication.getAuthor().getId() != user_id) {
+            throw new WebApplicationException("Unauthorized", Response.Status.FORBIDDEN);
+        }
+
+        // Atualizar título
+        if (formParts.containsKey("title")) {
+            String title = formParts.get("title").get(0).getBodyAsString();
+            publication.setTitle(title);
+        }
+
+        // Atualizar área científica
+        if (formParts.containsKey("scientific_area")) {
+            String area = formParts.get("scientific_area").get(0).getBodyAsString();
+            publication.setScientificArea(area);
+        }
+
+        // Atualizar resumo
+        if (formParts.containsKey("summary")) {
+            String summary = formParts.get("summary").get(0).getBodyAsString();
+            if (summary != null && !summary.isBlank()) {
+                publication.setSummary(summary);
+            }
+        }
+
+        if (formParts.containsKey("is_visible")) {
+            String isVisibleStr = formParts.get("is_visible").get(0).getBodyAsString();
+            boolean isVisible = Boolean.parseBoolean(isVisibleStr);
+            publication.setVisible(isVisible);
+        }
+
+        publication.setVisible(publication.isVisible());
+
+        // Atualizar ficheiro (opcional)
+        if (formParts.containsKey("file")) {
+            InputPart filePart = formParts.get("file").get(0);
+            String fileName = PublicationUtils.getFileName(filePart.getHeaders());
+            InputStream fileData = filePart.getBody(InputStream.class, null);
+
+            User author = userBean.find(user_id.toString());
+
+            // Guardar ficheiro
+            String uniqueFileName = UUID.randomUUID() + "_" + fileName;
+            Path path = Paths.get(UPLOAD_DIR, uniqueFileName);
+            Files.createDirectories(path.getParent());
+            Files.copy(fileData, path, StandardCopyOption.REPLACE_EXISTING);
+
+
+            publication.setFileKey(uniqueFileName);
+            publication.setFileName(fileName);
+        }
+
+        publication = em.merge(publication);
+        return publication;
+    }
+
+
+    public File getPublicationFile(long publicationId) {
+
+        Publication publication = em.find(Publication.class, publicationId);
+
+        System.out.println(publicationId);
+        System.out.println("aqui");
+        if (publication == null) {
+            throw new WebApplicationException("Publication not found", Response.Status.NOT_FOUND);
+        }
+
+        String storedFileName = publication.getFileKey();
+        if (storedFileName == null || storedFileName.isBlank()) {
+            throw new WebApplicationException(
+                    "Publication has no file",
+                    Response.Status.NOT_FOUND
+            );
+        }
+
+        Path filePath = Paths.get(UPLOAD_DIR, storedFileName);
+
+        if (!Files.exists(filePath)) {
+            throw new WebApplicationException(
+                    "File not found on server",
+                    Response.Status.NOT_FOUND
+            );
+        }
+
+        return filePath.toFile();
+    }
+
+
+    public Publication removeFile(Long publicationId, Long userId) {
+
+        Publication publication = em.find(Publication.class, publicationId);
+        if (publication == null) {
+            throw new WebApplicationException("Publication not found",
+                    Response.Status.NOT_FOUND);
+        }
+
+        // (Opcional) garantir que só o autor pode editar
+        if (publication.getAuthor().getId() != userId) {
+            throw new WebApplicationException("Unauthorized", Response.Status.FORBIDDEN);
+        }
+
+        // Se não houver ficheiro, não há nada a fazer
+        if (publication.getFileKey() != null) {
+            Path filePath = Paths.get(UPLOAD_DIR, publication.getFileKey());
+
+            try {
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                throw new WebApplicationException("Error deleting file", Response.Status.INTERNAL_SERVER_ERROR);
+            }
+
+            // Limpar campos
+            publication.setFileKey(null);
+            publication.setFileName(null);
+        }
+
+        return em.merge(publication);
+    }
 
 }

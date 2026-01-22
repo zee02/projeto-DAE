@@ -9,7 +9,10 @@ import jakarta.ws.rs.core.*;
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
+
+import java.io.File;
 import java.io.StringReader;
+
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.PublicationEdit;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
@@ -278,7 +281,6 @@ public class PublicationService {
     }
 
 
-
     //EP08- histórico de edições das publicações
     @GET
     @Authenticated
@@ -315,6 +317,46 @@ public class PublicationService {
         }).toList();
 
         return Response.ok(response).build();
+    }
+
+    //EP 33 editar publicacao
+    @PUT
+    @Path("/{id}")
+    @Authenticated
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response editPost(@PathParam("id") Long id, MultipartFormDataInput input) throws IOException {
+
+        Long user_id = Long.parseLong(securityContext.getUserPrincipal().getName());
+
+        Publication publication = publicationBean.edit(id, input, user_id);
+
+        return Response.ok(PublicationDTO.from(publication)).build();
+    }
+
+
+    @GET
+    @Path("/{id}/download")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response download(@PathParam("id") long id) {
+
+        File fileData = publicationBean.getPublicationFile(id);
+
+        return Response.ok(fileData).header("Content-Disposition", "attachment; filename=\"" + fileData.getName() + "\"").build();
+    }
+
+    @DELETE
+    @Path("/{id}/file")
+    @Authenticated
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response removePublicationFile(@PathParam("id") Long id) {
+
+        Long userId = Long.parseLong(securityContext.getUserPrincipal().getName());
+
+        Publication publication = publicationBean.removeFile(id, userId);
+
+        return Response.ok(PublicationDTO.from(publication)
+        ).build();
     }
 
 
