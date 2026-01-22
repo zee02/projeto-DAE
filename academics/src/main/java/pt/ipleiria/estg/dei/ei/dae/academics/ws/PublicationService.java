@@ -65,9 +65,12 @@ public class PublicationService {
         
         // Se está autenticado, retorna todas as publicações
         // Se não está autenticado, retorna apenas as públicas
+        System.out.println("🔍 getAllPublicPosts - UserPrincipal: " + securityContext.getUserPrincipal());
         if (securityContext.getUserPrincipal() != null) {
+            System.out.println("✅ User authenticated - calling getAllPublications()");
             publications = publicationBean.getAllPublications();
         } else {
+            System.out.println("❌ User NOT authenticated - calling getAllPublic() (filters confidential)");
             publications = publicationBean.getAllPublic();
         }
         
@@ -321,6 +324,35 @@ public class PublicationService {
         return Response.ok(response).build();
     }
 
+    // Marcar ou desmarcar publicação como confidencial
+    @PUT
+    @Authenticated
+    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @Path("/{post_id}/confidential")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateConfidential(@PathParam("post_id") long post_id, @Valid ConfidentialDTO dto) {
+        try {
+            Publication publication = publicationBean.updateConfidential(post_id, dto.isConfidential());
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Confidencialidade da publicação atualizada com sucesso");
+            response.put("post_id", publication.getId());
+            response.put("confidential", publication.isConfidential());
+            response.put("updated_at", publication.getUpdatedAt());
+            
+            return Response.ok(response).build();
+        } catch (MyEntityNotFoundException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("error", e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Erro ao atualizar confidencialidade"))
+                    .build();
+        }
+    }
+
 
     //EP08- histórico de edições das publicações
     @GET
@@ -388,6 +420,42 @@ public class PublicationService {
     @Path("/{id}/download")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response download(@PathParam("id") long id) {
+        Publication publication = publicationBean.findWithTags(id);
+        
+        if (publication == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("error", "Publicação não encontrada"))
+                    .build();
+        }
+        
+        // Verificar se é confidencial e utilizador não está autenticado
+        boolean isAuthenticated = securityContext.getUserPrincipal() != null;
+        if (publication.isConfidential() && !isAuthenticated) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("error", "Publicação não encontrada"))
+                    .build();
+        }
+        
+        // Verificar se está oculta
+        if (!publication.isVisible()) {
+            // Apenas autor, admin ou responsavel podem aceder
+            if (!isAuthenticated) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Publicação não encontrada"))
+                        .build();
+            }
+            
+            String userEmail = securityContext.getUserPrincipal().getName();
+            boolean isAuthor = publication.getAuthor().getEmail().equals(userEmail);
+            boolean isAdmin = securityContext.isUserInRole("Administrador");
+            boolean isResponsavel = securityContext.isUserInRole("Responsavel");
+            
+            if (!isAuthor && !isAdmin && !isResponsavel) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Publicação não encontrada"))
+                        .build();
+            }
+        }
 
         File fileData = publicationBean.getPublicationFile(id);
 

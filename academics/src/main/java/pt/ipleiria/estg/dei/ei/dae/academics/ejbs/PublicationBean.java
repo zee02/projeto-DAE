@@ -87,6 +87,11 @@ public class PublicationBean {
         if (formParts.containsKey("summary")) {
             summary = readUtf8(formParts.get("summary").get(0));
         }
+        
+        boolean isConfidential = false;
+        if (formParts.containsKey("is_confidential")) {
+            isConfidential = Boolean.parseBoolean(readUtf8(formParts.get("is_confidential").get(0)));
+        }
 
 
 
@@ -108,6 +113,7 @@ public class PublicationBean {
         }
 
         Publication publication = new Publication(title, area, true, summary, fileName, uniqueFileName, author);
+        publication.setConfidential(isConfidential);
 
         em.persist(publication);
         
@@ -127,6 +133,11 @@ public class PublicationBean {
 
     public List<Publication> getAllPublic() {
         List<Publication> publications = em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
+        
+        // Filtrar publicações confidenciais (apenas visíveis E não confidenciais)
+        publications = publications.stream()
+            .filter(p -> !p.isConfidential())
+            .collect(java.util.stream.Collectors.toList());
         
         // Fetch comments in a separate query to avoid cartesian product
         if (!publications.isEmpty()) {
@@ -326,7 +337,7 @@ public class PublicationBean {
                     SELECT DISTINCT p
                     FROM Publication p
                     LEFT JOIN FETCH p.tags
-                    WHERE p.isVisible = true
+                    WHERE p.isVisible = true AND p.isConfidential = false
                     ORDER BY p.%s %s
                 """.formatted(fieldName, orderDirection);
 
@@ -420,6 +431,30 @@ public class PublicationBean {
             User author = publication.getAuthor();
             recordEdit(publication, author, java.util.Map.of(
                 "is_visible", java.util.Map.of("old", oldVisible, "new", visible)
+            ));
+        }
+
+        return publication;
+    }
+
+    // Marcar ou desmarcar publicação como confidencial
+    public Publication updateConfidential(long postId, boolean confidential) throws MyEntityNotFoundException {
+        Publication publication = em.find(Publication.class, postId);
+
+        if (publication == null) {
+            throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
+        }
+        
+        boolean oldConfidential = publication.isConfidential();
+        publication.setConfidential(confidential);
+        publication.setUpdatedAt(new Timestamp(new Date().getTime()));
+        em.flush();
+        
+        // Registar no histórico se houve mudança
+        if (oldConfidential != confidential) {
+            User author = publication.getAuthor();
+            recordEdit(publication, author, java.util.Map.of(
+                "is_confidential", java.util.Map.of("old", oldConfidential, "new", confidential)
             ));
         }
 
