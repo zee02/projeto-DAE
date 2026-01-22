@@ -562,6 +562,12 @@ public class PublicationBean {
         }
 
         publication = em.merge(publication);
+        
+        // Inicializar collections lazy para evitar LazyInitializationException
+        Hibernate.initialize(publication.getComments());
+        Hibernate.initialize(publication.getTags());
+        Hibernate.initialize(publication.getRatings());
+        
         return publication;
     }
 
