@@ -16,34 +16,49 @@ public class UserDTO implements Serializable {
     private String name;
     private String email;
     private Role role;
-    private boolean active;
     // Password é usada apenas na criação (input), não na saída
     private String password;
+    // Lista de tags subscritas pelo usuário
+    private List<TagDTO> subscribedTags;
 
     public UserDTO() {
     }
 
-    public UserDTO(long id, String name, String email, Role role, boolean active) {
+    public UserDTO(long id, String name, String email, Role role) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
-        this.active = active;
     }
 
-    // Removed constructor with subscribedTags
+    public UserDTO(long id, String name, String email, Role role, List<TagDTO> subscribedTags) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+        this.subscribedTags = subscribedTags;
+    }
 
     public static UserDTO from(User user) {
         return new UserDTO(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                mapRole(user),
-                user.isActive()
+                mapRole(user)
         );
     }
 
-    // Removed fromWithTags to avoid lazy loading
+    public static UserDTO fromWithTags(User user) {
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                mapRole(user),
+                user.getSubscribedTags() != null ?    
+                    TagDTO.from(user.getSubscribedTags()) :
+                    List.of()
+        );
+    }
 
     private static Role mapRole(User user) {
         if (user instanceof Administrator) return Role.Administrador;
@@ -96,13 +111,11 @@ public class UserDTO implements Serializable {
         this.password = password;
     }
 
-    public boolean isActive() {
-        return active;
+    public List<TagDTO> getSubscribedTags() {
+        return subscribedTags;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setSubscribedTags(List<TagDTO> subscribedTags) {
+        this.subscribedTags = subscribedTags;
     }
-
-    // Removed get/setSubscribedTags
 }

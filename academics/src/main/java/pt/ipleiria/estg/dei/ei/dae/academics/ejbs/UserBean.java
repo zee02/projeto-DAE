@@ -73,6 +73,10 @@ public class UserBean {
         User user = findByEmail(email);
 
         if (user != null && Hasher.verify(password, user.getPassword())) {
+            // Check if user is active
+            if (!user.isActive()) {
+                return null; // Inactive users cannot login
+            }
             // subscribedTags already initialized in findByEmail
             return user;
         }
