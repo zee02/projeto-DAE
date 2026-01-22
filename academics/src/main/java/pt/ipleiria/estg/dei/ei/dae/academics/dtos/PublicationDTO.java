@@ -22,6 +22,7 @@ public class PublicationDTO implements Serializable {
     private String scientificArea;
     private String summary;
     private boolean visible;
+    private boolean confidential;
     private String fileUrl;
     private AuthorDTO author;
     private double averageRating;
@@ -48,6 +49,7 @@ public class PublicationDTO implements Serializable {
         dto.scientificArea = p.getScientificArea();
         dto.summary = p.getSummary();
         dto.visible = p.isVisible();
+        dto.confidential = p.isConfidential();
         dto.fileUrl = "/api/posts/" + p.getId() + "/file";
         dto.author = AuthorDTO.from(p.getAuthor());
         dto.averageRating = p.getAverageRating();
@@ -87,6 +89,14 @@ public class PublicationDTO implements Serializable {
 
     public boolean isVisible() {
         return visible;
+    }
+
+    public boolean getConfidential() {
+        return confidential;
+    }
+
+    public void setConfidential(boolean confidential) {
+        this.confidential = confidential;
     }
 
     public String getFileUrl() {
