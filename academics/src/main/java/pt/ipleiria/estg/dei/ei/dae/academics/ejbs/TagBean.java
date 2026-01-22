@@ -93,6 +93,7 @@ public class TagBean {
 
         User user = userBean.find(userId);
         List<String> tagNames = new ArrayList<>();
+        java.util.List<String> addedTags = new java.util.ArrayList<>();
 
         for (Long tagId : tagIds.getTags()) {
 
@@ -111,6 +112,20 @@ public class TagBean {
                 
                 // Enviar email para subscritores da tag
                 notifySubscribersOfNewPublication(tag, publication, user);
+               
+            }
+        }
+
+        // Registrar no histórico se tags foram adicionadas
+        if (!addedTags.isEmpty()) {
+            try {
+                publicationBean.seedHistory(
+                    postId,
+                    publication.getAuthor().getEmail(),
+                    java.util.Map.of("tags", "Tags adicionadas: " + String.join(", ", addedTags))
+                );
+            } catch (Exception e) {
+                // Não falhar se histórico não for gravado
             }
         }
         
@@ -171,6 +186,7 @@ public class TagBean {
 
         User user = userBean.find(userId);
         List<String> tagNames = new ArrayList<>();
+        java.util.List<String> removedTags = new java.util.ArrayList<>();
 
         for (Long tagId : tagIds.getTags()) {
 
@@ -184,6 +200,20 @@ public class TagBean {
                 publication.removeTag(tag);
                 tag.getPublications().remove(publication);
                 tagNames.add(tag.getName());
+                removedTags.add(tag.getName());
+            }
+        }
+
+        // Registrar no histórico se tags foram removidas
+        if (!removedTags.isEmpty()) {
+            try {
+                publicationBean.seedHistory(
+                    postId,
+                    publication.getAuthor().getEmail(),
+                    java.util.Map.of("tags", "Tags removidas: " + String.join(", ", removedTags))
+                );
+            } catch (Exception e) {
+                // Não falhar se histórico não for gravado
             }
         }
         

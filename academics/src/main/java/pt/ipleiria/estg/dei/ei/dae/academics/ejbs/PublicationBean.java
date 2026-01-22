@@ -107,9 +107,20 @@ public class PublicationBean {
             summary = "Resumo pendente de geração automática.";
         }
 
-        Publication publication = new Publication(title, area, false, summary, fileName, uniqueFileName, author);
+        Publication publication = new Publication(title, area, true, summary, fileName, uniqueFileName, author);
 
         em.persist(publication);
+        
+        // Registrar criação no histórico
+        em.flush(); // Garantir que a publicação tem ID
+        recordEdit(publication, author, Map.of(
+                "title", publication.getTitle(),
+                "scientific_area", publication.getScientificArea(),
+                "summary", publication.getSummary(),
+                "file", publication.getFileName(),
+                "is_visible", Map.of("valueType", publication.isVisible() ? "TRUE" : "FALSE")
+        ));
+        
         return publication;
     }
 
@@ -139,8 +150,49 @@ public class PublicationBean {
         return publications;
     }
 
+    public List<Publication> getAllPublications() {
+        // Fetch all publications with tags (similar to getHiddenPublications)
+        List<Publication> publications = em.createQuery(
+            "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags ORDER BY p.updatedAt DESC", 
+            Publication.class
+        ).getResultList();
+        
+        System.out.println("=== getAllPublications DEBUG ===");
+        System.out.println("Total publications: " + publications.size());
+        long visibleCount = publications.stream().filter(Publication::isVisible).count();
+        long hiddenCount = publications.stream().filter(p -> !p.isVisible()).count();
+        System.out.println("Visible: " + visibleCount + ", Hidden: " + hiddenCount);
+        publications.forEach(p -> System.out.println("ID: " + p.getId() + ", Title: " + p.getTitle() + ", Visible: " + p.isVisible()));
+        
+        // Fetch comments in a separate query to avoid cartesian product
+        if (!publications.isEmpty()) {
+            em.createQuery("""
+                        SELECT DISTINCT p
+                        FROM Publication p
+                        LEFT JOIN FETCH p.comments
+                        WHERE p IN :publications
+                    """, Publication.class)
+                    .setParameter("publications", publications)
+                    .getResultList();
+            
+            // Initialize authors of comments
+            for (Publication p : publications) {
+                for (var comment : p.getComments()) {
+                    Hibernate.initialize(comment.getAuthor());
+                }
+            }
+        }
+        
+        return publications;
+    }
+
     public Publication findWithTags(long id) {
         Publication p = em.find(Publication.class, id);
+        
+        if (p == null) {
+            return null;
+        }
+        
         Hibernate.initialize(p.getTags());
         Hibernate.initialize(p.getComments());
         return p;
@@ -149,6 +201,10 @@ public class PublicationBean {
 
     public Publication findWithComments(long id) {
         Publication p = em.find(Publication.class, id);
+        
+        if (p == null) {
+            return null;
+        }
 
         Hibernate.initialize(p.getComments());
         Hibernate.initialize(p.getTags());
@@ -298,6 +354,48 @@ public class PublicationBean {
         return publications;
     }
 
+    // Ordenar todas as publicações (incluindo ocultas) - para usuários autenticados
+    public List<Publication> getAllPublicationsSorted(String sortBy, String order) {
+
+        String fieldName = switch (sortBy) {
+            case "average_rating" -> "averageRating";
+            case "comments_count" -> "commentsCount";
+            case "ratings_count" -> "ratingsCount";
+            default -> "averageRating";
+        };
+
+        String orderDirection = order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
+
+        String jpqlPublications = """
+                    SELECT DISTINCT p
+                    FROM Publication p
+                    LEFT JOIN FETCH p.tags
+                    ORDER BY p.%s %s
+                """.formatted(fieldName, orderDirection);
+
+        List<Publication> publications = em.createQuery(jpqlPublications, Publication.class).getResultList();
+
+        if (!publications.isEmpty()) {
+            em.createQuery("""
+                                SELECT DISTINCT p
+                                FROM Publication p
+                                LEFT JOIN FETCH p.comments
+                                WHERE p IN :publications
+                            """, Publication.class)
+                    .setParameter("publications", publications)
+                    .getResultList();
+            
+            // Initialize authors of comments
+            for (Publication p : publications) {
+                for (var comment : p.getComments()) {
+                    Hibernate.initialize(comment.getAuthor());
+                }
+            }
+        }
+
+        return publications;
+    }
+
     // EP20 - Ocultar ou mostrar publicação
     public Publication updateVisibility(long postId, boolean visible) throws MyEntityNotFoundException {
         Publication publication = em.find(Publication.class, postId);
@@ -305,9 +403,25 @@ public class PublicationBean {
         if (publication == null) {
             throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
         }
-
+        
+        boolean oldVisible = publication.isVisible();
+        System.out.println("=== updateVisibility DEBUG ===");
+        System.out.println("Publication ID: " + postId + ", Title: " + publication.getTitle());
+        System.out.println("Old visibility: " + oldVisible + " -> New visibility: " + visible);
+        
         publication.setVisible(visible);
         publication.setUpdatedAt(new Timestamp(new Date().getTime()));
+        em.flush(); // Force immediate persistence
+        
+        System.out.println("After setVisible - publication.isVisible(): " + publication.isVisible());
+        
+        // Registar no histórico se houve mudança
+        if (oldVisible != visible) {
+            User author = publication.getAuthor();
+            recordEdit(publication, author, java.util.Map.of(
+                "is_visible", java.util.Map.of("old", oldVisible, "new", visible)
+            ));
+        }
 
         return publication;
     }
@@ -413,11 +527,11 @@ public class PublicationBean {
             throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
         }
 
+        // Qualquer usuário autenticado pode ver o histórico de uma publicação visível
+        // Apenas o autor pode ver histórico de publicação não visível
         User requester = userBean.find(userId);
-
-        // regra do enunciado: só o autor pode ver o histórico (inclui posts não visíveis)
-        if (publication.getAuthor().getId() != requester.getId()) {
-            throw new ForbiddenException("Utilizador não é o autor da publicação");
+        if (!publication.isVisible() && publication.getAuthor().getId() != requester.getId()) {
+            throw new ForbiddenException("Apenas o autor pode ver histórico de publicação oculta");
         }
 
         int safePage = Math.max(page, 1);
@@ -428,6 +542,12 @@ public class PublicationBean {
                 .setFirstResult((safePage - 1) * safeLimit)
                 .setMaxResults(safeLimit)
                 .getResultList();
+    }
+
+    public long countPostHistory(long postId) {
+        return em.createNamedQuery("countPublicationHistory", Long.class)
+                .setParameter("postId", postId)
+                .getSingleResult();
     }
 
     // EP21 - Get hidden publications with pagination, search, and sorting

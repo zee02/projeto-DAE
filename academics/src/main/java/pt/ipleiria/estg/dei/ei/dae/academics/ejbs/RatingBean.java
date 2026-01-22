@@ -78,14 +78,37 @@ public class RatingBean {
             publication.recalculateRatings();
             em.merge(publication);
 
+            // Registrar no histórico
+            try {
+                publicationBean.seedHistory(
+                    publication.getId(),
+                    user.getEmail(),
+                    java.util.Map.of("rating", "Avaliação recebida: " + score + " estrelas por " + user.getName())
+                );
+            } catch (Exception e) {
+                // Não falhar se histórico não for gravado
+            }
+
             return newRating;
         } else {
+            int oldScore = existentRating.getScore();
             existentRating.setScore(score);
             em.merge(existentRating);
 
             //recalcular métricas
             publication.recalculateRatings();
             em.merge(publication);
+
+            // Registrar no histórico
+            try {
+                publicationBean.seedHistory(
+                    publication.getId(),
+                    user.getEmail(),
+                    java.util.Map.of("rating", "Avaliação atualizada de " + oldScore + " para " + score + " estrelas por " + user.getName())
+                );
+            } catch (Exception e) {
+                // Não falhar se histórico não for gravado
+            }
 
             return existentRating;
         }
