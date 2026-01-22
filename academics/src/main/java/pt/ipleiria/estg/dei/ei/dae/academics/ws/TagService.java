@@ -37,7 +37,7 @@ public class TagService {
 
     // EP32 - Consultar Todas as tags
     @GET
-    @RolesAllowed({"Administrador, Responsavel, Colaborador"})
+    @RolesAllowed({"Administrador", "Responsavel", "Colaborador"})
     public List<TagDTO> getAllTags() {
         return TagDTO.from(tagBean.findAll());
     }
