@@ -149,7 +149,12 @@ public class PublicationBean {
         Publication p = em.find(Publication.class, id);
 
         Hibernate.initialize(p.getComments());
-
+        Hibernate.initialize(p.getTags());
+        
+        // Inicializar subscribers de cada tag para notificações
+        if (p.getTags() != null) {
+            p.getTags().forEach(tag -> Hibernate.initialize(tag.getSubscribers()));
+        }
 
         return p;
     }

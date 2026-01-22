@@ -3,18 +3,22 @@ package pt.ipleiria.estg.dei.ei.dae.academics.ejbs;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.*;
+import jakarta.mail.MessagingException;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.CommentDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Comment;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Stateless
@@ -27,6 +31,9 @@ public class CommentBean {
 
     @EJB
     private UserBean userBean;
+
+    @EJB
+    private EmailBean emailBean;
 
     public Comment findByPublication(long publicationId) {
 
@@ -65,8 +72,39 @@ public class CommentBean {
         em.merge(publication);
         em.flush();
 
+        // Notificar subscritores das tags da publicação
+        notifyTagSubscribers(publication, user, comment);
+
         return newComent;
 
+    }
+
+    private void notifyTagSubscribers(Publication publication, User commentAuthor, String commentContent) {
+        // Coletar subscritores únicos de todas as tags da publicação
+        Set<User> subscribers = new HashSet<>();
+        
+        for (Tag tag : publication.getTags()) {
+            subscribers.addAll(tag.getSubscribers());
+        }
+        
+        // Remover o autor do comentário da lista (não notificar a si mesmo)
+        subscribers.remove(commentAuthor);
+        
+        // Enviar email para cada subscritor
+        for (User subscriber : subscribers) {
+            try {
+                emailBean.send(
+                    subscriber.getEmail(),
+                    "Novo comentário na publicação " + publication.getTitle(),
+                    "Foi feito um novo comentário na publicação '" + publication.getTitle() + "' por " + commentAuthor.getName() + ".\n\n" +
+                    "Comentário: " + commentContent + "\n\n" +
+                    "Esta é uma notificação automática porque está subscrito a uma das tags desta publicação."
+                );
+            } catch (MessagingException e) {
+                // Log do erro mas não falhar a criação do comentário
+                System.err.println("Erro ao enviar email para " + subscriber.getEmail() + ": " + e.getMessage());
+            }
+        }
     }
 
     //EP19 - Ocultar ou mostrar comentários de uma publicação
