@@ -27,6 +27,9 @@ public class TagBean {
     @EJB
     private PublicationBean publicationBean;
 
+    @EJB
+    private EmailBean emailBean;
+
     public List<Tag> findAll() {
 
         List<Tag> results = em.createNamedQuery(
@@ -105,6 +108,9 @@ public class TagBean {
                 publication.addTag(tag);
                 tag.getPublications().add(publication);
                 tagNames.add(tag.getName());
+                
+                // Enviar email para subscritores da tag
+                notifySubscribersOfNewPublication(tag, publication, user);
             }
         }
         
@@ -114,6 +120,45 @@ public class TagBean {
                 "Associou tag(s) à publicação: " + publication.getTitle(), 
                 "Tags: " + String.join(", ", tagNames));
         }
+    }
+
+    private void notifySubscribersOfNewPublication(Tag tag, Publication publication, User associatedBy) {
+        // Obter todos os subscritores da tag
+        List<User> subscribers = new ArrayList<>(tag.getSubscribers());
+        
+        // Remover o utilizador que fez a associação (não precisa ser notificado)
+        subscribers.remove(associatedBy);
+        
+        if (subscribers.isEmpty()) {
+            return;
+        }
+        
+        String subject = "Nova Publicação com Tag: " + tag.getName();
+        String message = String.format(
+            "Olá,\n\n" +
+            "Uma nova publicação foi marcada com a tag \"%s\" que você está a seguir.\n\n" +
+            "Título: %s\n" +
+            "Autor: %s\n" +
+            "Adicionada por: %s\n\n" +
+            "Acesse o sistema para ver mais detalhes.\n\n" +
+            "Atenciosamente,\n" +
+            "Sistema de Publicações Académicas",
+            tag.getName(),
+            publication.getTitle(),
+            publication.getAuthor().getName(),
+            associatedBy.getName()
+        );
+        
+        subscribers.forEach(subscriber -> {
+            try {
+                System.out.println("📧 Enviando email para: " + subscriber.getEmail());
+                emailBean.send(subscriber.getEmail(), subject, message);
+                System.out.println("✅ Email enviado com sucesso para: " + subscriber.getEmail());
+            } catch (Exception e) {
+                System.err.println("❌ Erro ao enviar email para " + subscriber.getEmail() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
 
