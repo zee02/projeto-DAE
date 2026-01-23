@@ -64,7 +64,7 @@ public class UserService {
             User newUser;
 
             switch (dto.getRole()) {
-                case Administrador:
+                case Administrator:
                     newUser = administratorBean.create(
                             dto.getPassword(),
                             dto.getName(),
@@ -72,7 +72,7 @@ public class UserService {
                     );
                     break;
 
-                case Responsavel:
+                case Manager:
                     newUser = responsibleBean.create(
                             dto.getPassword(),
                             dto.getName(),
@@ -80,7 +80,7 @@ public class UserService {
                     );
                     break;
 
-                case Colaborador:
+                case Collaborator:
                     newUser = collaboratorBean.create(
                             dto.getPassword(),
                             dto.getName(),

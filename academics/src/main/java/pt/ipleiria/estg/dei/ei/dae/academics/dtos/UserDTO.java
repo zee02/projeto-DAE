@@ -67,9 +67,9 @@ public class UserDTO implements Serializable {
     }
 
     private static Role mapRole(User user) {
-        if (user instanceof Administrator) return Role.Administrador;
-        if (user instanceof Responsible)   return Role.Responsavel;
-        if (user instanceof Collaborator)  return Role.Colaborador;
+        if (user instanceof Administrator) return Role.Administrator;
+        if (user instanceof Responsible)   return Role.Manager;
+        if (user instanceof Collaborator)  return Role.Collaborator;
         throw new IllegalStateException("User sem role válido");
     }
     public static List<UserDTO> from(List<User> users) {
