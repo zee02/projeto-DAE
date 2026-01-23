@@ -545,59 +545,51 @@ public class PublicationBean {
 
     // EP09 - Pesquisar publicações
     public List<Publication> searchPublications(SearchPublicationDTO dto) {
+        System.out.println("🔍 searchPublications called with: " + 
+            "title=" + dto.getTitle() + 
+            ", authorId=" + dto.getAuthorId() + 
+            ", dateFrom=" + dto.getDateFrom() + 
+            ", dateTo=" + dto.getDateTo());
 
-        CriteriaBuilder cb = em.getCriteriaBuilder();
-        CriteriaQuery<Publication> cq = cb.createQuery(Publication.class);
-        Root<Publication> publication = cq.from(Publication.class);
-
-        List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
-
-        // isVisible = true
-        predicates.add(cb.isTrue(publication.get("isVisible")));
-
-        // Title search
-        if (dto.getTitle() != null && !dto.getTitle().isBlank()) {
-            predicates.add(cb.like(
-                cb.lower(publication.get("title")), 
-                "%" + dto.getTitle().toLowerCase() + "%"
-            ));
-        }
-
-        // Author ID search
-        if (dto.getAuthorId() != null) {
-            predicates.add(cb.equal(publication.get("author").get("id"), dto.getAuthorId()));
-        }
-
-        // Scientific area search
-        if (dto.getScientificArea() != null && !dto.getScientificArea().isBlank()) {
-            predicates.add(cb.like(
-                cb.lower(publication.get("scientificArea")), 
-                "%" + dto.getScientificArea().toLowerCase() + "%"
-            ));
-        }
-
-        // Tags search - publication must have at least one of the specified tags
+        // Use Named Queries instead of Criteria API for more reliable date filtering
+        TypedQuery<Publication> query;
+        
         if (dto.getTags() != null && !dto.getTags().isEmpty()) {
-            Join<Object, Object> tagsJoin = publication.join("tags");
-            predicates.add(tagsJoin.get("id").in(dto.getTags()));
+            query = em.createNamedQuery("Publication.search.withTags", Publication.class);
+            query.setParameter("tags", dto.getTags());
+            query.setParameter("tagCount", dto.getTags().size());
+        } else {
+            query = em.createNamedQuery("Publication.search.noTags", Publication.class);
         }
-
-        // Date from
+        
+        // Set parameters for all searches
+        query.setParameter("title", dto.getTitle() != null && !dto.getTitle().isBlank() ? 
+            "%" + dto.getTitle().toLowerCase() + "%" : "%");
+            
+        query.setParameter("scientificArea", dto.getScientificArea() != null && !dto.getScientificArea().isBlank() ? 
+            "%" + dto.getScientificArea().toLowerCase() + "%" : "%");
+            
+        query.setParameter("authorId", dto.getAuthorId() != null ? dto.getAuthorId() : -1L);
+        
+        // Date filtering parameters
         if (dto.getDateFrom() != null && !dto.getDateFrom().isBlank()) {
+            System.out.println("📅 Processing dateFrom: " + dto.getDateFrom());
             Timestamp fromTs = Timestamp.valueOf(LocalDate.parse(dto.getDateFrom()).atStartOfDay());
-            predicates.add(cb.greaterThanOrEqualTo(publication.get("createdAt"), fromTs));
+            System.out.println("📅 Converted to timestamp: " + fromTs);
+            query.setParameter("dateFrom", fromTs);
+        } else {
+            query.setParameter("dateFrom", Timestamp.valueOf("1900-01-01 00:00:00"));
         }
-
-        // Date to
+        
         if (dto.getDateTo() != null && !dto.getDateTo().isBlank()) {
+            System.out.println("📅 Processing dateTo: " + dto.getDateTo());
             Timestamp toTs = Timestamp.valueOf(LocalDate.parse(dto.getDateTo()).plusDays(1).atStartOfDay());
-            predicates.add(cb.lessThan(publication.get("createdAt"), toTs));
+            System.out.println("📅 Converted to timestamp: " + toTs);
+            query.setParameter("dateTo", toTs);
+        } else {
+            query.setParameter("dateTo", Timestamp.valueOf("2999-12-31 23:59:59"));
         }
 
-        cq.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
-        cq.orderBy(cb.desc(publication.get("createdAt")));
-
-        TypedQuery<Publication> query = em.createQuery(cq);
         List<Publication> allResults = query.getResultList();
 
         allResults.forEach(p -> {

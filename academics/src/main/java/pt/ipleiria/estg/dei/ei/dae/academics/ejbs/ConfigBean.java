@@ -98,6 +98,15 @@ public class ConfigBean {
             Publication pub32 = publicationBean.create("Modelo CNN para deteção de tumores", "AI models", "tester@colaborador.pt");
 
             Publication pub33 = publicationBean.create("TESTE", "Master's or doctoral theses", "duarte@mail.com");
+            
+            // Publicação mais antiga para testar filtro por data
+            Publication pubOld = publicationBean.create("Publicação Antiga para Teste", "Peer-reviewed scientific articles", "admin@mail.com");
+            // Definir data para 15 de janeiro de 2026 (8 dias atrás)
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.set(2026, java.util.Calendar.JANUARY, 15, 10, 0, 0);
+            cal.set(java.util.Calendar.MILLISECOND, 0);
+            pubOld.setCreatedAt(new java.sql.Timestamp(cal.getTimeInMillis()));
+            pubOld.setUpdatedAt(new java.sql.Timestamp(cal.getTimeInMillis()));
 
             commentBean.create(pub2, "2", "Este comentário foi criado no config");
             commentBean.create(pub2, "2", "Outro comentário");
