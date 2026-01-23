@@ -11,13 +11,8 @@ public class SearchPublicationDTO {
     private String dateTo;
     private Integer page;
     private Integer limit;
-<<<<<<< Updated upstream
-=======
-
     private String sortBy;    // ex: "createdAt", "title", "scientificArea"
     private String sortOrder;
-
->>>>>>> Stashed changes
 
     public SearchPublicationDTO() {
     }
@@ -85,8 +80,6 @@ public class SearchPublicationDTO {
     public void setLimit(int limit) {
         this.limit = limit;
     }
-<<<<<<< Updated upstream
-=======
 
     public String getSortBy() {
         return sortBy;
@@ -103,5 +96,4 @@ public class SearchPublicationDTO {
     public void setSortOrder(String sortOrder) {
         this.sortOrder = sortOrder;
     }
->>>>>>> Stashed changes
 }
