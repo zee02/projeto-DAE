@@ -60,7 +60,7 @@ import java.util.List;
                             SELECT p FROM Publication p
                             WHERE p.isVisible = true
                               AND LOWER(p.title) LIKE LOWER(:title)
-                              AND (:authorId < 0 OR p.author.id = :authorId)
+                              AND (:authorId IS NULL OR p.author.id = :authorId)
                               AND LOWER(p.scientificArea) LIKE LOWER(:scientificArea)
                               AND p.createdAt >= :dateFrom
                               AND p.createdAt < :dateTo
@@ -74,7 +74,7 @@ import java.util.List;
                             JOIN p.tags t
                             WHERE p.isVisible = true
                               AND LOWER(p.title) LIKE LOWER(:title)
-                              AND (:authorId < 0 OR p.author.id = :authorId)
+                              AND (:authorId IS NULL OR p.author.id = :authorId)
                               AND LOWER(p.scientificArea) LIKE LOWER(:scientificArea)
                               AND t.id IN :tags
                               AND p.createdAt >= :dateFrom

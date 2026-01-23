@@ -47,10 +47,10 @@ public class UserService {
     @Context
     private SecurityContext securityContext;
 
-    // EP31 - Consultar todos (Apenas Admin)
+    // EP31 - Consultar todos (Todos os usuários autenticados podem ver para filtrar publicações)
     @GET
     @Authenticated
-    @RolesAllowed({"Administrator"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     public List<UserDTO> getAllUsers() {
         return UserDTO.from(userBean.findAll());
     }
