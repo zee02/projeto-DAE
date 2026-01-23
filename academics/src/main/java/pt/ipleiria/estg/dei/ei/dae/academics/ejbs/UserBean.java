@@ -6,6 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.*;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityExistsException;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.UserDeactivatedException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Hasher;
 import java.util.HashMap;
 import java.util.List;
@@ -69,13 +70,13 @@ public class UserBean {
         return user;
     }
 
-    public User canLogin(String email, String password) {
+    public User canLogin(String email, String password) throws UserDeactivatedException {
         User user = findByEmail(email);
 
         if (user != null && Hasher.verify(password, user.getPassword())) {
             // Check if user is active
             if (!user.isActive()) {
-                return null; // Inactive users cannot login
+                throw new UserDeactivatedException("Your account has been deactivated. Please contact an administrator.");
             }
             // subscribedTags already initialized in findByEmail
             return user;
