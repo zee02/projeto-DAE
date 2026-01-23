@@ -326,7 +326,7 @@ public class PublicationService {
                     .build();
         }
         
-        publication = publicationBean.updateVisibility(post_id, dto.getVisible(), userEmail);
+        publication = publicationBean.updateVisibility(post_id, dto.getVisible(), currentUserId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Visibilidade da publicação atualizada com sucesso");

@@ -19,6 +19,7 @@ public class UserDTO implements Serializable {
     private boolean active;
     // Password é usada apenas na criação (input), não na saída
     private String password;
+    private List<TagDTO> subscribedTags;
 
     public UserDTO() {
     }
@@ -31,7 +32,14 @@ public class UserDTO implements Serializable {
         this.active = active;
     }
 
-    // Removed constructor with subscribedTags
+    public UserDTO(long id, String name, String email, Role role, boolean active, List<TagDTO> subscribedTags) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.role = role;
+        this.active = active;
+        this.subscribedTags = subscribedTags;
+    }
 
     public static UserDTO from(User user) {
         return new UserDTO(
@@ -43,7 +51,20 @@ public class UserDTO implements Serializable {
         );
     }
 
-    // Removed fromWithTags to avoid lazy loading
+    public static UserDTO fromWithTags(User user) {
+        List<TagDTO> tags = null;
+        if (user.getSubscribedTags() != null && Hibernate.isInitialized(user.getSubscribedTags())) {
+            tags = TagDTO.from(user.getSubscribedTags());
+        }
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                mapRole(user),
+                user.isActive(),
+                tags
+        );
+    }
 
     private static Role mapRole(User user) {
         if (user instanceof Administrator) return Role.Administrador;
@@ -104,5 +125,11 @@ public class UserDTO implements Serializable {
         this.active = active;
     }
 
-    // Removed get/setSubscribedTags
+    public List<TagDTO> getSubscribedTags() {
+        return subscribedTags;
+    }
+
+    public void setSubscribedTags(List<TagDTO> subscribedTags) {
+        this.subscribedTags = subscribedTags;
+    }
 }
