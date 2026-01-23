@@ -683,21 +683,23 @@ public class PublicationBean {
         
         // Enviar email para cada subscriber
         String subject = "Publicação Atualizada: " + publication.getTitle();
+        String publicationUrl = "http://localhost:3000/publications/" + publication.getId();
         String message = String.format(
             "Olá,\n\n" +
             "A publicação \"%s\" foi atualizada por %s.\n\n" +
             "Alterações realizadas:\n%s\n" +
-            "Acesse o sistema para ver mais detalhes.\n\n" +
+            "Acesse o sistema para ver mais detalhes:\n%s\n\n" +
             "Atenciosamente,\n" +
             "Sistema de Publicações Académicas",
             publication.getTitle(),
             publication.getAuthor().getName(),
-            changesText.toString()
+            changesText.toString(),
+            publicationUrl
         );
         
         subscribers.forEach(subscriber -> {
             try {
-                System.out.println("📧 Enviando email para: " + subscriber.getEmail());
+                System.out.println("📧 Enviar email para: " + subscriber.getEmail());
                 emailBean.send(subscriber.getEmail(), subject, message);
                 System.out.println("✅ Email enviado com sucesso para: " + subscriber.getEmail());
             } catch (Exception e) {
