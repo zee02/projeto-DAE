@@ -43,7 +43,7 @@ public class TagService {
     // EP16 - Criar uma nova tag
     @POST
     @Authenticated
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Manager", "Administrator"})
     public Response createTag(@Valid TagDTO dto) {
         String userId = securityContext.getUserPrincipal().getName();
         Tag newTag = tagBean.create(dto.getName(), userId);
