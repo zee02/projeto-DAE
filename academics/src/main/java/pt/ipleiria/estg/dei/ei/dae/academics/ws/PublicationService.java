@@ -93,6 +93,63 @@ public class PublicationService {
                 .toList();
     }
 
+    // Get single publication by ID
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getPublicationById(@PathParam("id") long id) {
+        try {
+            Publication publication = publicationBean.findWithComments(id);
+            
+            if (publication == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Publicação não encontrada"))
+                        .build();
+            }
+            
+            // Check if user is authenticated
+            boolean isAuthenticated = securityContext.getUserPrincipal() != null;
+            
+            // If not authenticated and publication is confidential, return 404
+            if (!isAuthenticated && publication.isConfidential()) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Publicação não encontrada"))
+                        .build();
+            }
+            
+            // If publication is hidden, only author, admin or responsavel can view
+            if (!publication.isVisible()) {
+                if (!isAuthenticated) {
+                    return Response.status(Response.Status.NOT_FOUND)
+                            .entity(Map.of("error", "Publicação não encontrada"))
+                            .build();
+                }
+                
+                String userEmail = securityContext.getUserPrincipal().getName();
+                boolean isAuthor = publication.getAuthor().getEmail().equals(userEmail);
+                boolean isAdmin = securityContext.isUserInRole("Administrador");
+                boolean isResponsavel = securityContext.isUserInRole("Responsavel");
+                
+                if (!isAuthor && !isAdmin && !isResponsavel) {
+                    return Response.status(Response.Status.NOT_FOUND)
+                            .entity(Map.of("error", "Publicação não encontrada"))
+                            .build();
+                }
+            }
+            
+            PublicationDTO dto = PublicationDTO.from(publication);
+            dto.setTags(TagDTO.from(publication.getTags()));
+            dto.setComments(CommentDTO.from(publication.getComments()));
+            
+            return Response.ok(dto).build();
+            
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Erro ao buscar publicação"))
+                    .build();
+        }
+    }
+
     // EP09 - Pesquisar publicações
     @POST
     @Path("/search")

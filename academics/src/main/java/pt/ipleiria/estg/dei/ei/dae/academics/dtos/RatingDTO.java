@@ -25,6 +25,11 @@ public class RatingDTO {
         dto.score = p.getScore();
         return dto;
     }
+    
+    public static List<RatingDTO> from(List<Rating> ratings) {
+        return ratings.stream().map(RatingDTO::from).collect(Collectors.toList());
+    }
+    
     public Integer getRating() {
         return score;
     }

@@ -151,24 +151,26 @@ public class TagBean {
         }
         
         String subject = "Nova Publicação com Tag: " + tag.getName();
+        String publicationUrl = "http://localhost:3000/publications/" + publication.getId();
         String message = String.format(
             "Olá,\n\n" +
             "Uma nova publicação foi marcada com a tag \"%s\" que você está a seguir.\n\n" +
             "Título: %s\n" +
             "Autor: %s\n" +
             "Adicionada por: %s\n\n" +
-            "Acesse o sistema para ver mais detalhes.\n\n" +
+            "Acesse o sistema para ver mais detalhes:\n%s\n\n" +
             "Atenciosamente,\n" +
             "Sistema de Publicações Académicas",
             tag.getName(),
             publication.getTitle(),
             publication.getAuthor().getName(),
-            associatedBy.getName()
+            associatedBy.getName(),
+            publicationUrl
         );
         
         subscribers.forEach(subscriber -> {
             try {
-                System.out.println("📧 Enviando email para: " + subscriber.getEmail());
+                System.out.println("📧 Enviar email para: " + subscriber.getEmail());
                 emailBean.send(subscriber.getEmail(), subject, message);
                 System.out.println("✅ Email enviado com sucesso para: " + subscriber.getEmail());
             } catch (Exception e) {

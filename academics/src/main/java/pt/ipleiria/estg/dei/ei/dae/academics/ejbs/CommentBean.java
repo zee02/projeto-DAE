@@ -103,6 +103,7 @@ public class CommentBean {
         subscribers.remove(commentAuthor);
         
         // Enviar email para cada subscritor
+        String publicationUrl = "http://localhost:3000/publications/" + publication.getId();
         for (User subscriber : subscribers) {
             try {
                 emailBean.send(
@@ -110,6 +111,7 @@ public class CommentBean {
                     "Novo comentário na publicação " + publication.getTitle(),
                     "Foi feito um novo comentário na publicação '" + publication.getTitle() + "' por " + commentAuthor.getName() + ".\n\n" +
                     "Comentário: " + commentContent + "\n\n" +
+                    "Acesse o sistema para ver mais detalhes:\n" + publicationUrl + "\n\n" +
                     "Esta é uma notificação automática porque está subscrito a uma das tags desta publicação."
                 );
             } catch (MessagingException e) {

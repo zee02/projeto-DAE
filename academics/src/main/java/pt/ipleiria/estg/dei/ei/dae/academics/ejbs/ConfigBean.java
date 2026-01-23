@@ -99,9 +99,9 @@ public class ConfigBean {
 
             Publication pub33 = publicationBean.create("TESTE", "testeteste", "duarte@mail.com");
 
-            commentBean.create(pub2, "teste@mail.com", "Este comentário foi criado no config");
-            commentBean.create(pub2, "teste@mail.com", "Outro comentário");
-            commentBean.create(pub5, "colab@mail.com", "Outro comentário");
+            commentBean.create(pub2, "2", "Este comentário foi criado no config");
+            commentBean.create(pub2, "2", "Outro comentário");
+            commentBean.create(pub5, "5", "Outro comentário");
 
             ratingBean.giveRating(1L, "2", 4);
             ratingBean.giveRating(2L, "4", 5);
