@@ -40,3 +40,6 @@ build/
 ./uploads
 
 uploads/
+
+### Environment Variables - NÃO COMMITAR CHAVES API ###
+.env
