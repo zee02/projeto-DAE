@@ -617,7 +617,6 @@ public class PublicationBean {
         if (dto.getTags() != null && !dto.getTags().isEmpty()) {
             query = em.createNamedQuery("Publication.search.withTags", Publication.class);
             query.setParameter("tags", dto.getTags());
-            query.setParameter("tagCount", dto.getTags().size());
         } else {
             query = em.createNamedQuery("Publication.search.noTags", Publication.class);
         }
