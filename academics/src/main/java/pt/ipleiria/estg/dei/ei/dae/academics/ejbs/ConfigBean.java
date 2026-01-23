@@ -64,40 +64,40 @@ public class ConfigBean {
 
 
 
-            Publication pub1  = publicationBean.create("Introdução à Programação em Java", "Engenharia Informática", "admin@mail.com");
-            Publication pub2  = publicationBean.create("Análise Estrutural de Pontes", "Engenharia Civil", "colab@mail.com");
-            Publication pub3  = publicationBean.create("Sistemas Distribuídos", "Engenharia Informática", "teste@mail.com");
-            Publication pub4  = publicationBean.create("Gestão de Obras Públicas", "Engenharia Civil", "resp@mail.com");
-            Publication pub5  = publicationBean.create("Bases de Dados Relacionais", "Engenharia Informática", "duarte@mail.com");
-            Publication pub6  = publicationBean.create("Planeamento Urbano e Mobilidade", "Engenharia Civil", "colab@mail.com");
-            Publication pub7  = publicationBean.create("Desenvolvimento de APIs REST", "Engenharia Informática", "teste@mail.com");
-            Publication pub8  = publicationBean.create("Estruturas de Betão Armado", "Engenharia Civil", "resp@mail.com");
-            Publication pub9  = publicationBean.create("Arquiteturas de Software", "Engenharia Informática", "duarte@mail.com");
-            Publication pub10 = publicationBean.create("Reabilitação de Edifícios Antigos", "Engenharia Civil", "colab@mail.com");
-            Publication pub11 = publicationBean.create("Segurança Aplicacional", "Engenharia Informática", "teste@mail.com");
-            Publication pub12 = publicationBean.create("Impacto Ambiental de Infraestruturas", "Engenharia Civil", "resp@mail.com");
-            Publication pub13 = publicationBean.create("Engenharia de Requisitos", "Engenharia Informática", "duarte@mail.com");
-            Publication pub14 = publicationBean.create("Topografia e Cartografia Digital", "Engenharia Civil", "colab@mail.com");
-            Publication pub15 = publicationBean.create("Programação Orientada a Objetos", "Engenharia Informática", "teste@mail.com");
-            Publication pub16 = publicationBean.create("Dimensionamento de Estruturas Metálicas", "Engenharia Civil", "resp@mail.com");
-            Publication pub17 = publicationBean.create("Testes e Qualidade de Software", "Engenharia Informática", "duarte@mail.com");
-            Publication pub18 = publicationBean.create("Avaliação de Riscos em Construção", "Engenharia Civil", "colab@mail.com");
-            Publication pub19 = publicationBean.create("Engenharia de Software Avançada", "Engenharia Informática", "teste@mail.com");
-            Publication pub20 = publicationBean.create("Tecnologias BIM na Construção", "Engenharia Civil", "resp@mail.com");
-            Publication pub21 = publicationBean.create("Integração Contínua e DevOps", "Engenharia Informática", "duarte@mail.com");
-            Publication pub22 = publicationBean.create("Infraestruturas de Transportes", "Engenharia Civil", "colab@mail.com");
-            Publication pub23 = publicationBean.create("Segurança em Sistemas de Informação", "Engenharia Informática", "teste@mail.com");
-            Publication pub24 = publicationBean.create("Planeamento e Controlo de Custos", "Engenharia Civil", "resp@mail.com");
-            Publication pub25 = publicationBean.create("Computação em Nuvem", "Engenharia Informática", "duarte@mail.com");
-            Publication pub26 = publicationBean.create("Engenharia Sísmica", "Engenharia Civil", "colab@mail.com");
-            Publication pub27 = publicationBean.create("Inteligência Artificial Aplicada", "Engenharia Informática", "teste@mail.com");
-            Publication pub28 = publicationBean.create("Fiscalização de Obras", "Engenharia Civil", "resp@mail.com");
-            Publication pub29 = publicationBean.create("Análise e Projeto de Algoritmos", "Engenharia Informática", "duarte@mail.com");
-            Publication pub30 = publicationBean.create("Infraestruturas Hidráulicas", "Engenharia Civil", "colab@mail.com");
-            Publication pub31 = publicationBean.create("Arquitetura de Computadores", "Engenharia Informática", "teste@mail.com");
-            Publication pub32 = publicationBean.create("Modelo CNN para deteção de tumores", "Modelo Tumores", "tester@colaborador.pt");
+            Publication pub1  = publicationBean.create("Introdução à Programação em Java", "Software (open source)", "admin@mail.com");
+            Publication pub2  = publicationBean.create("Análise Estrutural de Pontes", "Technical reports", "colab@mail.com");
+            Publication pub3  = publicationBean.create("Sistemas Distribuídos", "Peer-reviewed scientific articles", "teste@mail.com");
+            Publication pub4  = publicationBean.create("Gestão de Obras Públicas", "Conference proceedings", "resp@mail.com");
+            Publication pub5  = publicationBean.create("Bases de Dados Relacionais", "Databases", "duarte@mail.com");
+            Publication pub6  = publicationBean.create("Planeamento Urbano e Mobilidade", "Technical reports", "colab@mail.com");
+            Publication pub7  = publicationBean.create("Desenvolvimento de APIs REST", "Software (open source)", "teste@mail.com");
+            Publication pub8  = publicationBean.create("Estruturas de Betão Armado", "Book chapters or scientific books", "resp@mail.com");
+            Publication pub9  = publicationBean.create("Arquiteturas de Software", "Peer-reviewed scientific articles", "duarte@mail.com");
+            Publication pub10 = publicationBean.create("Reabilitação de Edifícios Antigos", "Conference proceedings", "colab@mail.com");
+            Publication pub11 = publicationBean.create("Segurança Aplicacional", "Peer-reviewed scientific articles", "teste@mail.com");
+            Publication pub12 = publicationBean.create("Impacto Ambiental de Infraestruturas", "Scientific data (datasets)", "resp@mail.com");
+            Publication pub13 = publicationBean.create("Engenharia de Requisitos", "Book chapters or scientific books", "duarte@mail.com");
+            Publication pub14 = publicationBean.create("Topografia e Cartografia Digital", "Scientific data (datasets)", "colab@mail.com");
+            Publication pub15 = publicationBean.create("Programação Orientada a Objetos", "Software (open source)", "teste@mail.com");
+            Publication pub16 = publicationBean.create("Dimensionamento de Estruturas Metálicas", "Technical reports", "resp@mail.com");
+            Publication pub17 = publicationBean.create("Testes e Qualidade de Software", "Conference proceedings", "duarte@mail.com");
+            Publication pub18 = publicationBean.create("Avaliação de Riscos em Construção", "Technical reports", "colab@mail.com");
+            Publication pub19 = publicationBean.create("Engenharia de Software Avançada", "Peer-reviewed scientific articles", "teste@mail.com");
+            Publication pub20 = publicationBean.create("Tecnologias BIM na Construção", "Software (open source)", "resp@mail.com");
+            Publication pub21 = publicationBean.create("Integração Contínua e DevOps", "Conference proceedings", "duarte@mail.com");
+            Publication pub22 = publicationBean.create("Infraestruturas de Transportes", "Technical reports", "colab@mail.com");
+            Publication pub23 = publicationBean.create("Segurança em Sistemas de Informação", "Peer-reviewed scientific articles", "teste@mail.com");
+            Publication pub24 = publicationBean.create("Planeamento e Controlo de Custos", "Book chapters or scientific books", "resp@mail.com");
+            Publication pub25 = publicationBean.create("Computação em Nuvem", "Software (open source)", "duarte@mail.com");
+            Publication pub26 = publicationBean.create("Engenharia Sísmica", "Scientific data (datasets)", "colab@mail.com");
+            Publication pub27 = publicationBean.create("Inteligência Artificial Aplicada", "AI models", "teste@mail.com");
+            Publication pub28 = publicationBean.create("Fiscalização de Obras", "Technical reports", "resp@mail.com");
+            Publication pub29 = publicationBean.create("Análise e Projeto de Algoritmos", "Peer-reviewed scientific articles", "duarte@mail.com");
+            Publication pub30 = publicationBean.create("Infraestruturas Hidráulicas", "Technical reports", "colab@mail.com");
+            Publication pub31 = publicationBean.create("Arquitetura de Computadores", "Book chapters or scientific books", "teste@mail.com");
+            Publication pub32 = publicationBean.create("Modelo CNN para deteção de tumores", "AI models", "tester@colaborador.pt");
 
-            Publication pub33 = publicationBean.create("TESTE", "testeteste", "duarte@mail.com");
+            Publication pub33 = publicationBean.create("TESTE", "Master's or doctoral theses", "duarte@mail.com");
 
             commentBean.create(pub2, "2", "Este comentário foi criado no config");
             commentBean.create(pub2, "2", "Outro comentário");
@@ -109,8 +109,8 @@ public class ConfigBean {
             tagBean.create("Java", "1");
             tagBean.create("Backend", "1");
             tagBean.create("Frontend", "1");
-            tagBean.create("Bases de Dados", "1");
-            tagBean.create("Engenharia", "1");
+            tagBean.create("Database", "1");
+            tagBean.create("Engineering", "1");
             tagBean.create("DAE", "1");
             tagBean.create("REST", "1");
 

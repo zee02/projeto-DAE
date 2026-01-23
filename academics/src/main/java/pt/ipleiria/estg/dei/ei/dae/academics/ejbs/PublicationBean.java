@@ -7,6 +7,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.persistence.criteria.Predicate;
@@ -517,6 +518,12 @@ public class PublicationBean {
             ));
         }
 
+        // Tags search - publication must have at least one of the specified tags
+        if (dto.getTags() != null && !dto.getTags().isEmpty()) {
+            Join<Object, Object> tagsJoin = publication.join("tags");
+            predicates.add(tagsJoin.get("id").in(dto.getTags()));
+        }
+
         // Date from
         if (dto.getDateFrom() != null && !dto.getDateFrom().isBlank()) {
             Timestamp fromTs = Timestamp.valueOf(LocalDate.parse(dto.getDateFrom()).atStartOfDay());
@@ -541,8 +548,8 @@ public class PublicationBean {
         });
 
         // 👉 paginação MANUAL
-        int safePage = Math.max(dto.getPage(), 1);
-        int safeLimit = Math.max(1, Math.min(dto.getLimit(), 100));
+        int safePage = dto.getPage() != null ? Math.max(dto.getPage(), 1) : 1;
+        int safeLimit = dto.getLimit() != null ? Math.max(1, Math.min(dto.getLimit(), 100)) : 100;
 
         int fromIndex = (safePage - 1) * safeLimit;
         if (fromIndex >= allResults.size()) {

@@ -174,8 +174,8 @@ public class PublicationService {
                 })
                 .toList();
 
-        int page = searchDTO.getPage();
-        int limit = searchDTO.getLimit();
+        int page = searchDTO.getPage() != null ? searchDTO.getPage() : 1;
+        int limit = searchDTO.getLimit() != null ? searchDTO.getLimit() : 100;
         int total = data.size(); // ⚠️ ver nota abaixo
 
         Map<String, Object> response = Map.of(
