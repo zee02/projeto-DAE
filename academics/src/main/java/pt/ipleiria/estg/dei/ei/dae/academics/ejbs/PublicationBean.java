@@ -861,4 +861,17 @@ public class PublicationBean {
         return em.merge(publication);
     }
 
+    public Integer getUserRating(Long publicationId, Long userId) {
+        try {
+            return em.createQuery(
+                "SELECT r.score FROM Rating r WHERE r.publication.id = :publicationId AND r.user.id = :userId",
+                Integer.class)
+                .setParameter("publicationId", publicationId)
+                .setParameter("userId", userId)
+                .getSingleResult();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
 }

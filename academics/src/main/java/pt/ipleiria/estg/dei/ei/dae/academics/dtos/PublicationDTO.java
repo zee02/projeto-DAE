@@ -30,6 +30,7 @@ public class PublicationDTO implements Serializable {
     private String fileKey;
     private int ratingsCount;
     private int commentsCount;
+    private Integer userRating;
     private List<TagDTO> tags;
     private List<CommentDTO> comments;
     private Timestamp createdAt;
@@ -165,6 +166,14 @@ public class PublicationDTO implements Serializable {
 
     public void setFileKey(String fileKey) {
         this.fileKey = fileKey;
+    }
+
+    public Integer getUserRating() {
+        return userRating;
+    }
+
+    public void setUserRating(Integer userRating) {
+        this.userRating = userRating;
     }
 }
 
