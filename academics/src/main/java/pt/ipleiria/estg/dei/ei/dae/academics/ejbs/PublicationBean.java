@@ -120,12 +120,19 @@ public class PublicationBean {
         // Registrar criação no histórico
         em.flush(); // Garantir que a publicação tem ID
         recordEdit(publication, author, Map.of(
+                "created", "true",
+                "action", "upload",
                 "title", publication.getTitle(),
                 "scientific_area", publication.getScientificArea(),
                 "summary", publication.getSummary(),
                 "file", publication.getFileName(),
                 "is_visible", Map.of("valueType", publication.isVisible() ? "TRUE" : "FALSE")
         ));
+        
+        // Registar upload na atividade do utilizador
+        userBean.logActivity(author, "UPLOAD_PUBLICATION", 
+            "Submeteu a publicação: " + publication.getTitle(), 
+            "Ficheiro: " + publication.getFileName() + ", ID: " + publication.getId());
         
         return publication;
     }
