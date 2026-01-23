@@ -188,41 +188,52 @@ public class UserBean {
         }
 
         // O JPA com SINGLE_TABLE inheritance não permite mudar o tipo diretamente
-        // Precisamos criar um novo utilizador do tipo correto e copiar os dados
+        // Os DiscriminatorValues são: "Colaborador", "Responsavel", "Administrador"
 
         String currentType = user.getClass().getSimpleName();
-        String targetType = switch (newRole) {
+        
+        // Mapear o role recebido para o DiscriminatorValue correto
+        String targetDiscriminator = switch (newRole) {
+            case "Colaborador", "Collaborator" -> "Colaborador";
+            case "Responsavel", "Manager" -> "Responsavel";
+            case "Administrador", "Administrator" -> "Administrador";
+            default -> throw new IllegalArgumentException("Role inválido: " + newRole);
+        };
+        
+        // Mapear o DiscriminatorValue para o nome da classe
+        String targetClassName = switch (targetDiscriminator) {
             case "Colaborador" -> "Collaborator";
-            case "Responsavel" -> "Manager";
+            case "Responsavel" -> "Responsible";
             case "Administrador" -> "Administrator";
-            case "Collaborator" -> "Collaborator";
-            case "Manager" -> "Manager";
-            case "Administrator" -> "Administrator";
             default -> throw new IllegalArgumentException("Role inválido: " + newRole);
         };
 
         // Se já é do tipo correto, não precisa fazer nada
-        if (currentType.equals(targetType)) {
+        if (currentType.equals(targetClassName)) {
             return user;
         }
 
-        // Atualizar o dtype diretamente na base de dados
+        // Atualizar o dtype diretamente na base de dados usando o DiscriminatorValue correto
         em.createNativeQuery("UPDATE users SET dtype = :dtype WHERE id = :id")
-                .setParameter("dtype", targetType)
+                .setParameter("dtype", targetDiscriminator)
                 .setParameter("id", userId)
                 .executeUpdate();
 
         em.flush();
         em.clear(); // Limpar cache para recarregar
         
-        User updatedUser = em.find(User.class, userId);
+        // Recarregar usando uma query nativa para forçar o JPA a usar a classe correta
+        User updatedUser = em.createQuery(
+                "SELECT u FROM User u WHERE u.id = :id", User.class)
+                .setParameter("id", userId)
+                .getSingleResult();
         
         // Log activity for the admin who changed the role
         User admin = find(adminId);
         if (admin != null) {
             logActivity(admin, "CHANGE_USER_ROLE", 
                 "Alterou o role do utilizador: " + updatedUser.getName(), 
-                String.format("De '%s' para '%s'", currentType, newRole));
+                String.format("De '%s' para '%s'", currentType, targetClassName));
         }
 
         return updatedUser;
