@@ -109,6 +109,7 @@ public class TagBean {
                 publication.addTag(tag);
                 tag.getPublications().add(publication);
                 tagNames.add(tag.getName());
+                addedTags.add(tag.getName());
                 
                 // Enviar email para subscritores da tag
                 notifySubscribersOfNewPublication(tag, publication, user);
@@ -121,11 +122,12 @@ public class TagBean {
             try {
                 publicationBean.seedHistory(
                     postId,
-                    publication.getAuthor().getEmail(),
+                    user.getEmail(),
                     java.util.Map.of("tags", "Tags adicionadas: " + String.join(", ", addedTags))
                 );
             } catch (Exception e) {
                 // Não falhar se histórico não for gravado
+                System.err.println("❌ Erro ao gravar histórico de tags: " + e.getMessage());
             }
         }
         
@@ -209,11 +211,12 @@ public class TagBean {
             try {
                 publicationBean.seedHistory(
                     postId,
-                    publication.getAuthor().getEmail(),
+                    user.getEmail(),
                     java.util.Map.of("tags", "Tags removidas: " + String.join(", ", removedTags))
                 );
             } catch (Exception e) {
                 // Não falhar se histórico não for gravado
+                System.err.println("❌ Erro ao gravar histórico de tags removidas: " + e.getMessage());
             }
         }
         

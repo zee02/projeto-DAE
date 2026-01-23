@@ -312,8 +312,9 @@ public class PublicationService {
         }
         
         // Check if user is author or has admin/responsavel role
-        String userEmail = securityContext.getUserPrincipal().getName();
-        boolean isAuthor = publication.getAuthor().getEmail().equals(userEmail);
+        // getUserPrincipal().getName() returns the user ID as string
+        String currentUserId = securityContext.getUserPrincipal().getName();
+        boolean isAuthor = publication.getAuthor().getIdAsString().equals(currentUserId);
         boolean isAdmin = securityContext.isUserInRole("Administrador");
         boolean isResponsavel = securityContext.isUserInRole("Responsavel");
         
@@ -458,8 +459,9 @@ public class PublicationService {
                         .build();
             }
             
-            String userEmail = securityContext.getUserPrincipal().getName();
-            boolean isAuthor = publication.getAuthor().getEmail().equals(userEmail);
+            // getUserPrincipal().getName() returns the user ID as string
+            String currentUserId = securityContext.getUserPrincipal().getName();
+            boolean isAuthor = publication.getAuthor().getIdAsString().equals(currentUserId);
             boolean isAdmin = securityContext.isUserInRole("Administrador");
             boolean isResponsavel = securityContext.isUserInRole("Responsavel");
             
