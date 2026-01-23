@@ -23,6 +23,8 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Tag;
+import pt.ipleiria.estg.dei.ei.dae.academics.entities.Comment;
 import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.MyEntityNotFoundException;
 import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 import jakarta.json.bind.Jsonb;
@@ -56,6 +58,12 @@ public class PublicationBean {
 
     @EJB
     private EmailBean emailBean;
+    
+    @EJB
+    private TagBean tagBean;
+    
+    @EJB
+    private CommentBean commentBean;
 
     private static final String UPLOAD_DIR = "/app/uploads";
 
@@ -143,7 +151,57 @@ public class PublicationBean {
             "Submeteu a publicação: " + publication.getTitle(), 
             "Ficheiro: " + publication.getFileName() + ", ID: " + publication.getId());
         
-        return publication;
+        // Processar tags se fornecidas
+        if (formParts.containsKey("tags")) {
+            try {
+                String tagsJson = readUtf8(formParts.get("tags").get(0));
+                if (!tagsJson.isBlank()) {
+                    // Parse JSON array de tag IDs
+                    List<Long> tagIds = jsonb.fromJson(tagsJson, new ArrayList<Long>(){}.getClass().getGenericSuperclass());
+                    
+                    // Associar tags à publicação
+                    for (Long tagId : tagIds) {
+                        Tag tag = tagBean.find(tagId);
+                        if (tag != null) {
+                            publication.getTags().add(tag);
+                            tag.getPublications().add(publication);
+                        }
+                    }
+                    
+                    // Registar adição de tags no histórico
+                    if (!tagIds.isEmpty()) {
+                        recordEdit(publication, author, Map.of(
+                            "tags_added", tagIds.toString(),
+                            "action", "add_tags_on_creation"
+                        ));
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Erro ao processar tags: " + e.getMessage());
+            }
+        }
+        
+        // Processar comentário inicial se fornecido
+        if (formParts.containsKey("initial_comment")) {
+            try {
+                String commentText = readUtf8(formParts.get("initial_comment").get(0));
+                if (!commentText.isBlank()) {
+                    Comment comment = commentBean.create(publication, user_id, commentText);
+                    
+                    // Registar adição de comentário no histórico
+                    recordEdit(publication, author, Map.of(
+                        "initial_comment", commentText,
+                        "action", "add_initial_comment"
+                    ));
+                }
+            } catch (Exception e) {
+                System.err.println("Erro ao processar comentário inicial: " + e.getMessage());
+            }
+        }
+        
+        // Recarregar a publicação com tags e comentários para retornar dados completos
+        em.flush(); // Garantir que todas as operações foram persistidas
+        return findWithComments(publication.getId());
     }
 
 

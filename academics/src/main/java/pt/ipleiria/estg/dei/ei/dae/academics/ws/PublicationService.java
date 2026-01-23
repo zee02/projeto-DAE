@@ -251,7 +251,13 @@ public class PublicationService {
     public Response createPost(MultipartFormDataInput input) throws IOException {
         String user_id = securityContext.getUserPrincipal().getName();
         Publication publication = publicationBean.create(input, user_id);
-        return Response.status(Response.Status.CREATED).entity(PublicationDTO.from(publication)).build();
+        
+        // Retornar publicação com tags e comentários carregados
+        PublicationDTO dto = PublicationDTO.from(publication);
+        dto.setTags(TagDTO.from(publication.getTags()));
+        dto.setComments(CommentDTO.from(publication.getComments()));
+        
+        return Response.status(Response.Status.CREATED).entity(dto).build();
     }
 
     //EP02 - Corrigir resumo gerado por IA
