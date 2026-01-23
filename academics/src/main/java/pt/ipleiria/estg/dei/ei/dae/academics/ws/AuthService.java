@@ -76,7 +76,7 @@ public class AuthService {
             org.hibernate.Hibernate.initialize(user.getSubscribedTags());
         }
         
-        return Response.ok(UserDTO.from(user)).build();
+        return Response.ok(UserDTO.fromWithTags(user)).build();
     }
 
     //EP30 - Logout / Terminar sessão do utilizador
