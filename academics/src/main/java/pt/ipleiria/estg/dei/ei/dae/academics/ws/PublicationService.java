@@ -67,7 +67,7 @@ public class PublicationService {
     @Produces(MediaType.APPLICATION_JSON)
     public List<PublicationDTO> getAllPublicPosts() {
         List<Publication> publications;
-        
+
         // Se está autenticado, retorna todas as publicações
         // Se não está autenticado, retorna apenas as públicas
         System.out.println(" getAllPublicPosts - UserPrincipal: " + securityContext.getUserPrincipal());
@@ -78,7 +78,7 @@ public class PublicationService {
             System.out.println(" User NOT authenticated - calling getAllPublic() (filters confidential)");
             publications = publicationBean.getAllPublic();
         }
-        
+
         return publications.stream()
                 .map(publication -> {
                     PublicationDTO dto = PublicationDTO.from(publication);
@@ -154,7 +154,7 @@ public class PublicationService {
         }
 
         List<Publication> publications;
-        
+
         // Se está autenticado, retorna todas as publicações ordenadas
         // Se não está autenticado, retorna apenas as públicas ordenadas
         if (securityContext.getUserPrincipal() != null) {
@@ -307,23 +307,23 @@ public class PublicationService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateVisibility(@PathParam("post_id") long post_id, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
         Publication publication = publicationBean.findWithTags(post_id);
-        
+
         if (publication == null) {
             throw new MyEntityNotFoundException("Publicação com id " + post_id + " não encontrada");
         }
-        
+
         // Check if user is author or has admin/responsavel role
         String userEmail = securityContext.getUserPrincipal().getName();
         boolean isAuthor = publication.getAuthor().getEmail().equals(userEmail);
         boolean isAdmin = securityContext.isUserInRole("Administrador");
         boolean isResponsavel = securityContext.isUserInRole("Responsavel");
-        
+
         if (!isAuthor && !isAdmin && !isResponsavel) {
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(Map.of("error", "Não tem permissão para alterar a visibilidade desta publicação"))
                     .build();
         }
-        
+
         publication = publicationBean.updateVisibility(post_id, dto.getVisible());
 
         Map<String, Object> response = new HashMap<>();
