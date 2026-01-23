@@ -72,6 +72,18 @@ public class CommentBean {
         em.merge(publication);
         em.flush();
 
+        // Registar no histórico da publicação
+        try {
+            String commentPreview = comment.length() > 50 ? comment.substring(0, 50) + "..." : comment;
+            publicationBean.seedHistory(
+                publication.getId(),
+                user.getEmail(),
+                java.util.Map.of("comment", "Comentário adicionado por " + user.getName() + ": \"" + commentPreview + "\"")
+            );
+        } catch (Exception e) {
+            System.err.println("❌ Erro ao gravar histórico de comentário: " + e.getMessage());
+        }
+
         // Notificar subscritores das tags da publicação
         notifyTagSubscribers(publication, user, comment);
 
@@ -164,9 +176,10 @@ public class CommentBean {
             User user = userBean.find(userId);
             if (user != null) {
                 String activityType = visible ? "SHOW_COMMENT" : "HIDE_COMMENT";
+                String authorName = comment.getAuthor() != null ? comment.getAuthor().getName() : "Anónimo";
                 String description = visible 
-                    ? "Tornou visível o comentário de " + comment.getAuthor().getName() 
-                    : "Ocultou o comentário de " + comment.getAuthor().getName();
+                    ? "Tornou visível o comentário de " + authorName 
+                    : "Ocultou o comentário de " + authorName;
                 String details = "Publicação: " + comment.getPublication().getTitle() + 
                                 ", Comentário ID: " + commentId;
                 userBean.logActivity(user, activityType, description, details);
