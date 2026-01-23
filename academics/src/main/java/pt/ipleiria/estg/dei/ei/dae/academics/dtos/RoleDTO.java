@@ -5,8 +5,8 @@ import jakarta.validation.constraints.Pattern;
 
 public class RoleDTO {
     @NotNull(message = "O campo role é obrigatório")
-    @Pattern(regexp = "^(Colaborador|Responsavel|Administrador)$",
-             message = "Role deve ser: Colaborador, Responsavel ou Administrador")
+    @Pattern(regexp = "^(Collaborator|Manager|Administrator)$",
+             message = "Role deve ser: Collaborator, Manager ou Administrator")
     private String role;
 
     public RoleDTO() {

@@ -51,13 +51,13 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             public boolean isUserInRole(String role) {
 
 
-                if (role.equals("Administrador") && user instanceof Administrator) {
+                if (role.equals("Administrator") && user instanceof Administrator) {
                     return true;
                 }
-                if (role.equals("Responsavel") && user instanceof Responsible) {
+                if (role.equals("Manager") && user instanceof Responsible) {
                     return true;
                 }
-                if (role.equals("Colaborador") && user instanceof Collaborator) {
+                if (role.equals("Collaborator") && user instanceof Collaborator) {
                     return true;
                 }
                 return false;

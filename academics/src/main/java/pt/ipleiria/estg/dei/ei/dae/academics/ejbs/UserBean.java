@@ -192,9 +192,12 @@ public class UserBean {
 
         String currentType = user.getClass().getSimpleName();
         String targetType = switch (newRole) {
-            case "Colaborador" -> "Colaborador";
-            case "Responsavel" -> "Responsavel";
-            case "Administrador" -> "Administrador";
+            case "Colaborador" -> "Collaborator";
+            case "Responsavel" -> "Manager";
+            case "Administrador" -> "Administrator";
+            case "Collaborator" -> "Collaborator";
+            case "Manager" -> "Manager";
+            case "Administrator" -> "Administrator";
             default -> throw new IllegalArgumentException("Role inválido: " + newRole);
         };
 
@@ -259,8 +262,8 @@ public class UserBean {
         // Atualizar role (validar primeiro)
         String oldRole = null;
         if (role != null && !role.isBlank()) {
-            if (!role.equals("Colaborador") && !role.equals("Responsavel") && !role.equals("Administrador")) {
-                throw new IllegalArgumentException("Role inválido: " + role + ". Deve ser: Colaborador, Responsavel ou Administrador");
+            if (!role.equals("Collaborator") && !role.equals("Manager") && !role.equals("Administrator")) {
+                throw new IllegalArgumentException("Role inválido: " + role + ". Deve ser: Collaborator, Manager ou Administrator");
             }
             oldRole = user.getClass().getSimpleName();
             if (!oldRole.equals(role)) {

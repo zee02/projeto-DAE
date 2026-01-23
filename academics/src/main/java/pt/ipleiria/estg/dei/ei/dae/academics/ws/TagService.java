@@ -59,7 +59,7 @@ public class TagService {
     @POST
     @Path("/{tag_id}/subscribe")
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     public Response subscribeToTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
         String userId = securityContext.getUserPrincipal().getName();
 
@@ -81,7 +81,7 @@ public class TagService {
     @DELETE
     @Path("/{tag_id}/subscribe")
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     public Response unsubscribeFromTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
         String userId = securityContext.getUserPrincipal().getName();
 
@@ -103,7 +103,7 @@ public class TagService {
     @DELETE
     @Path("/{tag_id}")
     @Authenticated
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Manager", "Administrator"})
     public Response deleteTag(@PathParam("tag_id") long tagId) throws MyEntityNotFoundException {
         String userId = securityContext.getUserPrincipal().getName();
         tagBean.delete(tagId, userId);
@@ -118,7 +118,7 @@ public class TagService {
     @PUT
     @Path("/{tag_id}/visibility")
     @Authenticated
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Manager", "Administrator"})
     public Response updateVisibility(@PathParam("tag_id") long tagId, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
         String userId = securityContext.getUserPrincipal().getName();
         Tag tag = tagBean.updateVisibility(tagId, dto.getVisible(), userId);

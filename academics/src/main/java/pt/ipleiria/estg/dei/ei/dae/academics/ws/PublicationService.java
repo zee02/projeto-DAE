@@ -159,7 +159,7 @@ public class PublicationService {
     @POST
     @Path("/search")
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchPublications(SearchPublicationDTO searchDTO) {
@@ -257,7 +257,7 @@ public class PublicationService {
     //EP02 - Corrigir resumo gerado por IA
     @PATCH
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Path("/{post_id}/summary")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -327,7 +327,7 @@ public class PublicationService {
     //EP19 - Ocultar ou mostrar comentários de uma publicação
     @PUT
     @Authenticated
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Manager", "Administrator"})
     @Path("/{post_id}/comments/visibility")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -347,7 +347,7 @@ public class PublicationService {
     //EP19 - Ocultar ou mostrar um comentário específico
     @PUT
     @Authenticated
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Manager", "Administrator"})
     @Path("/{post_id}/comments/{comment_id}/visibility")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -370,7 +370,7 @@ public class PublicationService {
     //EP20 - Ocultar ou mostrar publicação
     @PUT
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Path("/{post_id}/visibility")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -385,8 +385,8 @@ public class PublicationService {
         // getUserPrincipal().getName() returns the user ID as string
         String currentUserId = securityContext.getUserPrincipal().getName();
         boolean isAuthor = publication.getAuthor().getIdAsString().equals(currentUserId);
-        boolean isAdmin = securityContext.isUserInRole("Administrador");
-        boolean isResponsavel = securityContext.isUserInRole("Responsavel");
+        boolean isAdmin = securityContext.isUserInRole("Administrator");
+        boolean isResponsavel = securityContext.isUserInRole("Manager");
 
         if (!isAuthor && !isAdmin && !isResponsavel) {
             return Response.status(Response.Status.FORBIDDEN)
@@ -408,7 +408,7 @@ public class PublicationService {
     // Marcar ou desmarcar publicação como confidencial
     @PUT
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Path("/{post_id}/confidential")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -438,7 +438,7 @@ public class PublicationService {
     //EP08- histórico de edições das publicações
     @GET
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Path("/{post_id}/history")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPostHistory(
@@ -492,7 +492,7 @@ public class PublicationService {
         Long user_id = Long.parseLong(securityContext.getUserPrincipal().getName());
 
         // Check if user is admin (only admins can edit any publication)
-        boolean isAdmin = securityContext.isUserInRole("Administrador");
+        boolean isAdmin = securityContext.isUserInRole("Administrator");
 
         Publication publication = publicationBean.edit(id, input, user_id, isAdmin);
 
@@ -532,8 +532,8 @@ public class PublicationService {
             // getUserPrincipal().getName() returns the user ID as string
             String currentUserId = securityContext.getUserPrincipal().getName();
             boolean isAuthor = publication.getAuthor().getIdAsString().equals(currentUserId);
-            boolean isAdmin = securityContext.isUserInRole("Administrador");
-            boolean isResponsavel = securityContext.isUserInRole("Responsavel");
+            boolean isAdmin = securityContext.isUserInRole("Administrator");
+            boolean isResponsavel = securityContext.isUserInRole("Manager");
             
             if (!isAuthor && !isAdmin && !isResponsavel) {
                 return Response.status(Response.Status.NOT_FOUND)

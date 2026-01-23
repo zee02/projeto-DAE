@@ -50,7 +50,7 @@ public class UserService {
     // EP31 - Consultar todos (Apenas Admin)
     @GET
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public List<UserDTO> getAllUsers() {
         return UserDTO.from(userBean.findAll());
     }
@@ -58,7 +58,7 @@ public class UserService {
     // EP22 - Criar utilizador (Apenas Admin)
     @POST
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public Response createUser(@Valid UserDTO dto) {
         try {
             User newUser;
@@ -112,7 +112,7 @@ public class UserService {
     @DELETE
     @Path("/{user_id}")
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public Response deleteUser(@PathParam("user_id") long userId) {
         try {
             String adminId = securityContext.getUserPrincipal().getName();
@@ -127,7 +127,7 @@ public class UserService {
     @PUT
     @Path("/{user_id}/activate")
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public Response activateUser(@PathParam("user_id") long userId) {
         try {
             String adminId = securityContext.getUserPrincipal().getName();
@@ -142,7 +142,7 @@ public class UserService {
     @PUT
     @Path("/{user_id}/deactivate")
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public Response deactivateUser(@PathParam("user_id") long userId) {
         try {
             String adminId = securityContext.getUserPrincipal().getName();
@@ -171,7 +171,7 @@ public class UserService {
     @PATCH
     @Path("/me")
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     public Response updatePersonalData(@Valid UpdateUserDTO dto) {
         String user_id = securityContext.getUserPrincipal().getName();
 
@@ -183,7 +183,7 @@ public class UserService {
     @PUT
     @Path("/{user_id}/role")
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public Response updateUserRole(@PathParam("user_id") long userId, @Valid RoleDTO dto) {
         try {
             String adminId = securityContext.getUserPrincipal().getName();
@@ -204,7 +204,7 @@ public class UserService {
     @PUT
     @Path("/{user_id}")
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     public Response updateUser(@PathParam("user_id") long userId, @Valid UserDTO dto) {
         try {
             String adminId = securityContext.getUserPrincipal().getName();
@@ -252,7 +252,7 @@ public class UserService {
     @PATCH
     @Path("/me/password")
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response changePassword(@Valid ChangePasswordDTO dto) {
@@ -281,7 +281,7 @@ public class UserService {
     @GET
     @Path("/me/activity")
     @Authenticated
-    @RolesAllowed({"Colaborador", "Responsavel", "Administrador"})
+    @RolesAllowed({"Collaborator", "Manager", "Administrator"})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getMyActivity(
             @QueryParam("page") @DefaultValue("1") int page,
@@ -308,7 +308,7 @@ public class UserService {
     @GET
     @Path("/{user_id}/activities")
     @Authenticated
-    @RolesAllowed({"Administrador"})
+    @RolesAllowed({"Administrator"})
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserActivities(
             @PathParam("user_id") long userId,

@@ -38,7 +38,7 @@ public class AdminService {
 
     // EP21 - Consultar informação oculta
     @GET
-    @RolesAllowed({"Responsavel", "Administrador"})
+    @RolesAllowed({"Manager", "Administrator"})
     public Response getHiddenContent(
             @QueryParam("type") String type,
             @QueryParam("page") @DefaultValue("1") int page,
