@@ -59,11 +59,11 @@ import java.util.List;
                 query = """
                             SELECT p FROM Publication p
                             WHERE p.isVisible = true
-                              AND (:title IS NULL OR LOWER(p.title) LIKE LOWER(:title))
-                              AND (:authorId IS NULL OR p.author.id = :authorId)
-                              AND (:scientificArea IS NULL OR LOWER(p.scientificArea) LIKE LOWER(:scientificArea))
-                              AND (:dateFrom IS NULL OR p.createdAt >= :dateFrom)
-                              AND (:dateTo IS NULL OR p.createdAt < :dateTo)
+                              AND LOWER(p.title) LIKE LOWER(:title)
+                              AND (p.author.id = :authorId OR :authorId = -1)
+                              AND LOWER(p.scientificArea) LIKE LOWER(:scientificArea)
+                              AND p.createdAt >= :dateFrom
+                              AND p.createdAt < :dateTo
                             ORDER BY p.createdAt DESC
                         """
         ),
@@ -73,12 +73,12 @@ import java.util.List;
                             SELECT DISTINCT p FROM Publication p
                             JOIN p.tags t
                             WHERE p.isVisible = true
-                              AND (:title IS NULL OR LOWER(p.title) LIKE LOWER(:title))
-                              AND (:authorId IS NULL OR p.author.id = :authorId)
-                              AND (:scientificArea IS NULL OR LOWER(p.scientificArea) LIKE LOWER(:scientificArea))
-                              AND t.id IN :tagIds
-                              AND (:dateFrom IS NULL OR p.createdAt >= :dateFrom)
-                              AND (:dateTo IS NULL OR p.createdAt < :dateTo)
+                              AND LOWER(p.title) LIKE LOWER(:title)
+                              AND (p.author.id = :authorId OR :authorId = -1)
+                              AND LOWER(p.scientificArea) LIKE LOWER(:scientificArea)
+                              AND t.id IN :tags
+                              AND p.createdAt >= :dateFrom
+                              AND p.createdAt < :dateTo
                             ORDER BY p.createdAt DESC
                         """
         )

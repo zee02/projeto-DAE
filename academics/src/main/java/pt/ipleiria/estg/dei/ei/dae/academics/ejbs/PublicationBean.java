@@ -30,6 +30,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.utils.PublicationUtils;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.PublicationEdit;
+import jakarta.mail.MessagingException;
 
 
 import java.io.File;
@@ -47,6 +48,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 @Stateless
 public class PublicationBean {
@@ -212,7 +215,53 @@ public class PublicationBean {
         
         // Recarregar a publicação com tags e comentários para retornar dados completos
         em.flush(); // Garantir que todas as operações foram persistidas
+        
+        // Notificar subscritores se houver tags
+        if (!publication.getTags().isEmpty()) {
+            notifyTagSubscribersOnCreation(publication, author);
+        }
+        
         return findWithComments(publication.getId());
+    }
+
+    private void notifyTagSubscribersOnCreation(Publication publication, User author) {
+        Set<String> notifiedEmails = new HashSet<>();
+        String publicationUrl = "http://localhost:3000/publications/" + publication.getId();
+        String tagsString = publication.getTags().stream()
+                .map(Tag::getName)
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        // Enviar notificação por tag
+        for (Tag tag : publication.getTags()) {
+            for (User subscriber : tag.getSubscribers()) {
+                // Não notificar o autor
+                if (subscriber.equals(author)) {
+                    continue;
+                }
+
+                // Evitar enviar múltiplos emails para o mesmo usuário
+                if (notifiedEmails.contains(subscriber.getEmail())) {
+                    continue;
+                }
+
+                try {
+                    emailBean.send(
+                        subscriber.getEmail(),
+                        "Há novidades na tag " + tag.getName(),
+                        "Uma nova publicação foi criada no sistema:\n\n" +
+                        "Título: " + publication.getTitle() + "\n" +
+                        "Autor: " + author.getName() + "\n" +
+                        "Área Científica: " + publication.getScientificArea() + "\n" +
+                        "Tags: " + tagsString + "\n\n" +
+                        "Acesse o sistema para ver mais detalhes:\n" + publicationUrl + "\n\n" +
+                        "Esta é uma notificação automática porque está subscrito à tag '" + tag.getName() + "'."
+                    );
+                    notifiedEmails.add(subscriber.getEmail());
+                } catch (MessagingException e) {
+                    System.err.println("Erro ao enviar email para " + subscriber.getEmail() + ": " + e.getMessage());
+                }
+            }
+        }
     }
 
 
