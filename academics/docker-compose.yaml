@@ -27,7 +27,7 @@ services:
       - DB_NAME
       - WILDFLY_ADMIN_PASSWORD
       - POSTGRES_DRIVER_VERSION
-      - GEMINI_API_KEY=AIzaSyAUstMXIuO21chKVK1AoeS1iifgq3sF33o
+      - GEMINI_API_KEY
     volumes:
       - ./uploads:/app/uploads
     depends_on:
