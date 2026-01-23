@@ -123,6 +123,7 @@ public class ConfigBean {
             tagBean.associateTagToPublication(tags, 25, "1");
             tagBean.associateTagToPublication(tags, 29, "1");
 
+            tagBean.subscribeUserToTag("7",1);
 
             System.out.println("Users populated successfully!");
 
