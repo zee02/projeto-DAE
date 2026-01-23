@@ -103,6 +103,20 @@
             <version>6.2.4.Final</version> <scope>provided</scope>
         </dependency>
 
+        <!-- Apache PDFBox para extrair texto de PDFs -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.30</version>
+        </dependency>
+
+        <!-- Cliente HTTP para chamar OpenAI API -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version>
+        </dependency>
+
     </dependencies>
 
 
