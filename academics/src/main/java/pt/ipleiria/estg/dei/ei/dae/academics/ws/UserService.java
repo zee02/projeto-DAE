@@ -189,14 +189,14 @@ public class UserService {
             String adminId = securityContext.getUserPrincipal().getName();
             User updatedUser = userBean.updateRole(userId, dto.getRole(), adminId);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Papel do utilizador atualizado com sucesso");
-            response.put("user_id", updatedUser.getId());
-            response.put("new_role", dto.getRole());
-
-            return Response.ok(response).build();
+            // Return the updated user data
+            UserDTO userDTO = UserDTO.from(updatedUser);
+            
+            return Response.ok(userDTO).build();
         } catch (EntityNotFoundException e) {
             return Response.status(Response.Status.NOT_FOUND).entity(e.getMessage()).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
         }
     }
 

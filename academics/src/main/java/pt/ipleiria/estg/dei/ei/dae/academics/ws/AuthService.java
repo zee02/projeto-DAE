@@ -15,6 +15,7 @@ import pt.ipleiria.estg.dei.ei.dae.academics.dtos.AuthResponseDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.UserDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.ejbs.UserBean;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.User;
+import pt.ipleiria.estg.dei.ei.dae.academics.exceptions.UserDeactivatedException;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.Authenticated;
 import pt.ipleiria.estg.dei.ei.dae.academics.security.TokenIssuer;
 
@@ -31,17 +32,24 @@ public class AuthService {
     @POST
     @Path("/login")
     public Response authenticate(@Valid AuthDTO auth) {
+        try {
+            User user = userBean.canLogin(auth.getEmail(), auth.getPassword());
 
-        User user = userBean.canLogin(auth.getEmail(), auth.getPassword());
+            if (user == null) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity(java.util.Map.of("error", "INVALID_CREDENTIALS", "message", "Invalid credentials"))
+                        .build();
+            }
 
-        if (user == null) {
-            return Response.status(Response.Status.UNAUTHORIZED) .entity("Invalid credentials").build();
+            String token = TokenIssuer.issue(String.valueOf(user.getId()));
+            AuthResponseDTO response = new AuthResponseDTO("Autenticação bem-sucedida", token, user);
+
+            return Response.ok(response).build();
+        } catch (UserDeactivatedException e) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(java.util.Map.of("error", "USER_DEACTIVATED", "message", e.getMessage()))
+                    .build();
         }
-
-        String token = TokenIssuer.issue(String.valueOf(user.getId()));
-        AuthResponseDTO response = new AuthResponseDTO("Autenticação bem-sucedida", token, user);
-
-        return Response.ok(response).build();
     }
 
 

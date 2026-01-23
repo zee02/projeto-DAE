@@ -163,10 +163,157 @@ public class ConfigBean {
             publicationBean.seedHistory(pub33.getId(), "duarte@mail.com",
                     java.util.Map.of("visible", true));
 
+            // ==================== DADOS ADICIONAIS ====================
+            
+            // Novos utilizadores
+            responsibleBean.create("123", "Maria Santos", "maria.resp@mail.com");
+            responsibleBean.create("123", "Fernando Costa", "fernando@mail.com");
+            collaboratorBean.create("123", "Rita Gonçalves", "rita@mail.com");
+            collaboratorBean.create("123", "André Ferreira", "andre@mail.com");
+            collaboratorBean.create("123", "Catarina Dias", "catarina@mail.com");
+            collaboratorBean.create("123", "Tiago Marques", "tiago@mail.com");
+            collaboratorBean.create("123", "Inês Ribeiro", "ines@mail.com");
+            collaboratorBean.create("123", "Bruno Carvalho", "bruno@mail.com");
 
+            // Novas tags
+            tagBean.create("Python", "1");
+            tagBean.create("Machine Learning", "1");
+            tagBean.create("Cloud Computing", "1");
+            tagBean.create("DevOps", "1");
+            tagBean.create("Security", "1");
+            tagBean.create("Mobile", "1");
+            tagBean.create("IoT", "1");
+            tagBean.create("Big Data", "1");
 
+            // Novas publicações
+            Publication pub34 = publicationBean.create("Framework React para Aplicações Empresariais", "Software (open source)", "rita@mail.com");
+            Publication pub35 = publicationBean.create("Análise de Dados com Pandas e NumPy", "Scientific data (datasets)", "andre@mail.com");
+            Publication pub36 = publicationBean.create("Desenvolvimento Mobile com Flutter", "Software (open source)", "catarina@mail.com");
+            Publication pub37 = publicationBean.create("Redes Neurais Convolucionais para Visão Computacional", "AI models", "tiago@mail.com");
+            Publication pub38 = publicationBean.create("Microserviços com Docker e Kubernetes", "Software (open source)", "ines@mail.com");
+            Publication pub39 = publicationBean.create("Internet das Coisas: Protocolos e Aplicações", "Peer-reviewed scientific articles", "bruno@mail.com");
+            Publication pub40 = publicationBean.create("Blockchain e Smart Contracts", "Conference proceedings", "maria.resp@mail.com");
+            Publication pub41 = publicationBean.create("Natural Language Processing com Transformers", "AI models", "fernando@mail.com");
+            Publication pub42 = publicationBean.create("GraphQL vs REST: Estudo Comparativo", "Peer-reviewed scientific articles", "rita@mail.com");
+            Publication pub43 = publicationBean.create("Padrões de Arquitetura para Sistemas Escaláveis", "Book chapters or scientific books", "admin@mail.com");
+            Publication pub44 = publicationBean.create("Tese: Deep Learning para Processamento de Imagem", "Master's or doctoral theses", "teste@mail.com");
+            Publication pub45 = publicationBean.create("Automação de Testes com Selenium e Cypress", "Software (open source)", "colab@mail.com");
+            Publication pub46 = publicationBean.create("Big Data Analytics com Apache Spark", "Scientific data (datasets)", "resp@mail.com");
+            Publication pub47 = publicationBean.create("Energias Renováveis e Sustentabilidade", "Technical reports", "duarte@mail.com");
+            Publication pub48 = publicationBean.create("Gestão de Projetos com Metodologias Ágeis", "Conference proceedings", "andre@mail.com");
+            Publication pub49 = publicationBean.create("Patente: Sistema de Monitorização Ambiental IoT", "Patents", "catarina@mail.com");
+            Publication pub50 = publicationBean.create("Divulgação Científica: IA no Quotidiano", "Scientific outreach articles", "tiago@mail.com");
 
+            // Novos comentários
+            commentBean.create(pub1, "7", "Excelente introdução ao Java! Muito bem estruturado.");
+            commentBean.create(pub1, "8", "Gostei muito dos exemplos práticos.");
+            commentBean.create(pub3, "6", "Ótima abordagem sobre sistemas distribuídos.");
+            commentBean.create(pub7, "5", "Spring Boot é essencial hoje em dia!");
+            commentBean.create(pub11, "4", "Segurança é fundamental em qualquer sistema.");
+            commentBean.create(pub15, "3", "Python é uma linguagem fantástica para OOP.");
+            commentBean.create(pub21, "7", "DevOps mudou completamente a forma de trabalhar.");
+            commentBean.create(pub25, "8", "Cloud computing é o futuro!");
+            commentBean.create(pub27, "6", "IA está a revolucionar a medicina.");
+            commentBean.create(pub27, "5", "Resultados impressionantes nos testes.");
+            commentBean.create(pub32, "4", "Modelo CNN muito preciso!");
+            commentBean.create(pub34, "3", "React é fantástico para frontend.");
+            commentBean.create(pub37, "7", "Redes neurais explicadas de forma acessível.");
+            commentBean.create(pub38, "8", "Docker simplifica muito o deployment.");
+            commentBean.create(pub41, "6", "Transformers revolucionaram o NLP.");
+            commentBean.create(pub44, "5", "Tese muito bem elaborada.");
+            commentBean.create(pub44, "4", "Metodologia robusta e bem fundamentada.");
 
+            // Novos ratings
+            ratingBean.giveRating(pub1.getId(), "7", 5);
+            ratingBean.giveRating(pub1.getId(), "8", 5);
+            ratingBean.giveRating(pub1.getId(), "6", 4);
+            ratingBean.giveRating(pub3.getId(), "7", 4);
+            ratingBean.giveRating(pub3.getId(), "5", 5);
+            ratingBean.giveRating(pub5.getId(), "4", 5);
+            ratingBean.giveRating(pub5.getId(), "3", 4);
+            ratingBean.giveRating(pub7.getId(), "8", 5);
+            ratingBean.giveRating(pub7.getId(), "6", 5);
+            ratingBean.giveRating(pub7.getId(), "5", 4);
+            ratingBean.giveRating(pub11.getId(), "4", 4);
+            ratingBean.giveRating(pub11.getId(), "3", 5);
+            ratingBean.giveRating(pub15.getId(), "7", 5);
+            ratingBean.giveRating(pub15.getId(), "8", 5);
+            ratingBean.giveRating(pub21.getId(), "6", 4);
+            ratingBean.giveRating(pub21.getId(), "5", 5);
+            ratingBean.giveRating(pub25.getId(), "4", 5);
+            ratingBean.giveRating(pub25.getId(), "3", 4);
+            ratingBean.giveRating(pub25.getId(), "7", 5);
+            ratingBean.giveRating(pub27.getId(), "8", 5);
+            ratingBean.giveRating(pub27.getId(), "6", 5);
+            ratingBean.giveRating(pub27.getId(), "5", 4);
+            ratingBean.giveRating(pub32.getId(), "4", 5);
+            ratingBean.giveRating(pub32.getId(), "3", 5);
+            ratingBean.giveRating(pub34.getId(), "7", 5);
+            ratingBean.giveRating(pub34.getId(), "8", 4);
+            ratingBean.giveRating(pub37.getId(), "6", 4);
+            ratingBean.giveRating(pub37.getId(), "5", 5);
+            ratingBean.giveRating(pub38.getId(), "4", 5);
+            ratingBean.giveRating(pub38.getId(), "3", 5);
+            ratingBean.giveRating(pub41.getId(), "7", 5);
+            ratingBean.giveRating(pub41.getId(), "8", 5);
+            ratingBean.giveRating(pub44.getId(), "6", 5);
+            ratingBean.giveRating(pub44.getId(), "5", 5);
+            ratingBean.giveRating(pub44.getId(), "4", 4);
+
+            // Associar novas tags a publicações
+            TagDTO newTags = new TagDTO();
+            ArrayList<Long> newTagsIds = new ArrayList<>();
+            
+            // Python + Machine Learning
+            newTagsIds.clear();
+            newTagsIds.add(8L);  // Python
+            newTagsIds.add(9L);  // Machine Learning
+            newTags.setTags(new ArrayList<>(newTagsIds));
+            tagBean.associateTagToPublication(newTags, pub35.getId(), "1");
+            tagBean.associateTagToPublication(newTags, pub37.getId(), "1");
+            tagBean.associateTagToPublication(newTags, pub41.getId(), "1");
+            
+            // Cloud + DevOps
+            newTagsIds.clear();
+            newTagsIds.add(10L); // Cloud Computing
+            newTagsIds.add(11L); // DevOps
+            newTags.setTags(new ArrayList<>(newTagsIds));
+            tagBean.associateTagToPublication(newTags, pub38.getId(), "1");
+            tagBean.associateTagToPublication(newTags, pub21.getId(), "1");
+            
+            // Security
+            newTagsIds.clear();
+            newTagsIds.add(12L); // Security
+            newTags.setTags(new ArrayList<>(newTagsIds));
+            tagBean.associateTagToPublication(newTags, pub11.getId(), "1");
+            tagBean.associateTagToPublication(newTags, pub23.getId(), "1");
+            
+            // Mobile
+            newTagsIds.clear();
+            newTagsIds.add(13L); // Mobile
+            newTags.setTags(new ArrayList<>(newTagsIds));
+            tagBean.associateTagToPublication(newTags, pub36.getId(), "1");
+            
+            // IoT
+            newTagsIds.clear();
+            newTagsIds.add(14L); // IoT
+            newTags.setTags(new ArrayList<>(newTagsIds));
+            tagBean.associateTagToPublication(newTags, pub39.getId(), "1");
+            tagBean.associateTagToPublication(newTags, pub49.getId(), "1");
+            
+            // Big Data
+            newTagsIds.clear();
+            newTagsIds.add(15L); // Big Data
+            newTags.setTags(new ArrayList<>(newTagsIds));
+            tagBean.associateTagToPublication(newTags, pub46.getId(), "1");
+
+            // Subscrições de tags
+            tagBean.subscribeUserToTag("8", 8);   // Python
+            tagBean.subscribeUserToTag("8", 9);   // Machine Learning
+            tagBean.subscribeUserToTag("6", 10);  // Cloud Computing
+            tagBean.subscribeUserToTag("5", 12);  // Security
+
+            System.out.println("✅ Additional test data created successfully!");
 
         } catch (Exception e) {
             System.err.println("Error populating DB: " + e.getMessage());
