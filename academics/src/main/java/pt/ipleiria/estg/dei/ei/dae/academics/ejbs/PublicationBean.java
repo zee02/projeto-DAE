@@ -628,7 +628,8 @@ public class PublicationBean {
         query.setParameter("scientificArea", dto.getScientificArea() != null && !dto.getScientificArea().isBlank() ? 
             "%" + dto.getScientificArea().toLowerCase() + "%" : "%");
             
-        query.setParameter("authorId", dto.getAuthorId() != null ? dto.getAuthorId() : -1L);
+        // Use null when no author filter is specified
+        query.setParameter("authorId", dto.getAuthorId());
         
         // Date filtering parameters
         if (dto.getDateFrom() != null && !dto.getDateFrom().isBlank()) {
