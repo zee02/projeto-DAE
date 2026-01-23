@@ -2,6 +2,7 @@ package pt.ipleiria.estg.dei.ei.dae.academics.ws;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
+import jakarta.inject.Inject;
 import jakarta.persistence.NoResultException;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -57,6 +58,10 @@ public class PublicationService {
     @Context
     private SecurityContext securityContext;
 
+    @Inject
+    public PublicationService() {
+    }
+
     // EP06 - Consultar Públicas
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -66,13 +71,13 @@ public class PublicationService {
         
         // Se está autenticado, retorna todas as publicações
         // Se não está autenticado, retorna apenas as públicas
-        System.out.println("🔍 getAllPublicPosts - UserPrincipal: " + securityContext.getUserPrincipal());
+        System.out.println(" getAllPublicPosts - UserPrincipal: " + securityContext.getUserPrincipal());
         if (securityContext.getUserPrincipal() != null) {
             System.out.println("✅ User authenticated - calling getAllPublications()");
             currentUserId = Long.parseLong(securityContext.getUserPrincipal().getName());
             publications = publicationBean.getAllPublications();
         } else {
-            System.out.println("❌ User NOT authenticated - calling getAllPublic() (filters confidential)");
+            System.out.println(" User NOT authenticated - calling getAllPublic() (filters confidential)");
             publications = publicationBean.getAllPublic();
         }
         
@@ -158,16 +163,10 @@ public class PublicationService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchPublications(SearchPublicationDTO searchDTO) {
-        List<Publication> publications = publicationBean.searchPublications(
-                searchDTO.getTitle(),
-                searchDTO.getAuthorId(),
-                searchDTO.getScientificArea(),
-                searchDTO.getTags(),
-                searchDTO.getDateFrom(),
-                searchDTO.getDateTo()
-        );
 
-        List<PublicationDTO> dtos = publications.stream()
+        List<Publication> publications = publicationBean.searchPublications(searchDTO);
+
+        List<PublicationDTO> data = publications.stream()
                 .map(p -> {
                     PublicationDTO dto = PublicationDTO.from(p);
                     dto.setTags(TagDTO.from(p.getTags()));
@@ -175,8 +174,20 @@ public class PublicationService {
                 })
                 .toList();
 
-        return Response.ok(dtos).build();
+        int page = searchDTO.getPage();
+        int limit = searchDTO.getLimit();
+        int total = data.size(); // ⚠️ ver nota abaixo
+
+        Map<String, Object> response = Map.of(
+                "data", data,
+                "total", total,
+                "page", page,
+                "limit", limit
+        );
+
+        return Response.ok(response).build();
     }
+
 
     //EP10 - Ordenar lista de publicações
     @POST
@@ -210,7 +221,7 @@ public class PublicationService {
         }
 
         List<Publication> publications;
-        
+
         // Se está autenticado, retorna todas as publicações ordenadas
         // Se não está autenticado, retorna apenas as públicas ordenadas
         if (securityContext.getUserPrincipal() != null) {
@@ -365,18 +376,18 @@ public class PublicationService {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateVisibility(@PathParam("post_id") long post_id, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
         Publication publication = publicationBean.findWithTags(post_id);
-        
+
         if (publication == null) {
             throw new MyEntityNotFoundException("Publicação com id " + post_id + " não encontrada");
         }
-        
+
         // Check if user is author or has admin/responsavel role
         // getUserPrincipal().getName() returns the user ID as string
         String currentUserId = securityContext.getUserPrincipal().getName();
         boolean isAuthor = publication.getAuthor().getIdAsString().equals(currentUserId);
         boolean isAdmin = securityContext.isUserInRole("Administrador");
         boolean isResponsavel = securityContext.isUserInRole("Responsavel");
-        
+
         if (!isAuthor && !isAdmin && !isResponsavel) {
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(Map.of("error", "Não tem permissão para alterar a visibilidade desta publicação"))

@@ -50,7 +50,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             @Override
             public boolean isUserInRole(String role) {
 
-                System.out.println("aqui"+role);
+
                 if (role.equals("Administrador") && user instanceof Administrator) {
                     return true;
                 }

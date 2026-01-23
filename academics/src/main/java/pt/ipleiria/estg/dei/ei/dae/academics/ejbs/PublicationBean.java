@@ -4,7 +4,12 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.hibernate.Hibernate;
@@ -12,6 +17,7 @@ import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PaginatedPublicationsDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.PublicationDTO;
+import pt.ipleiria.estg.dei.ei.dae.academics.dtos.SearchPublicationDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.dtos.TagDTO;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Publication;
 import pt.ipleiria.estg.dei.ei.dae.academics.entities.Rating;
@@ -31,12 +37,14 @@ import java.nio.file.*;
 import java.sql.Timestamp;
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 @Stateless
 public class PublicationBean {
@@ -70,6 +78,7 @@ public class PublicationBean {
         String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         return Normalizer.normalize(content, Normalizer.Form.NFC);
     }
+
     public Publication create(MultipartFormDataInput input, String user_id) throws IOException {
 
         Map<String, List<InputPart>> formParts = input.getFormDataMap();
@@ -81,7 +90,7 @@ public class PublicationBean {
 
 
         String title = readUtf8(formParts.get("title").get(0));
-        String area  = readUtf8(formParts.get("scientific_area").get(0));
+        String area = readUtf8(formParts.get("scientific_area").get(0));
 
         String summary = null;
         if (formParts.containsKey("summary")) {
@@ -116,7 +125,7 @@ public class PublicationBean {
         publication.setConfidential(isConfidential);
 
         em.persist(publication);
-        
+
         // Registrar criação no histórico
         em.flush(); // Garantir que a publicação tem ID
         recordEdit(publication, author, Map.of(
@@ -141,22 +150,17 @@ public class PublicationBean {
     public List<Publication> getAllPublic() {
         List<Publication> publications = em.createNamedQuery("getAllPublicPosts", Publication.class).getResultList();
         
-        // Filtrar publicações confidenciais (apenas visíveis E não confidenciais)
-        publications = publications.stream()
-            .filter(p -> !p.isConfidential())
-            .collect(java.util.stream.Collectors.toList());
-        
         // Fetch comments in a separate query to avoid cartesian product
         if (!publications.isEmpty()) {
             em.createQuery("""
-                        SELECT DISTINCT p
-                        FROM Publication p
-                        LEFT JOIN FETCH p.comments
-                        WHERE p IN :publications
-                    """, Publication.class)
+                                SELECT DISTINCT p
+                                FROM Publication p
+                                LEFT JOIN FETCH p.comments
+                                WHERE p IN :publications
+                            """, Publication.class)
                     .setParameter("publications", publications)
                     .getResultList();
-            
+
             // Initialize authors of comments
             for (Publication p : publications) {
                 for (var comment : p.getComments()) {
@@ -164,35 +168,35 @@ public class PublicationBean {
                 }
             }
         }
-        
+
         return publications;
     }
 
     public List<Publication> getAllPublications() {
         // Fetch all publications with tags (similar to getHiddenPublications)
         List<Publication> publications = em.createQuery(
-            "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags ORDER BY p.updatedAt DESC", 
-            Publication.class
+                "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags ORDER BY p.updatedAt DESC",
+                Publication.class
         ).getResultList();
-        
+
         System.out.println("=== getAllPublications DEBUG ===");
         System.out.println("Total publications: " + publications.size());
         long visibleCount = publications.stream().filter(Publication::isVisible).count();
         long hiddenCount = publications.stream().filter(p -> !p.isVisible()).count();
         System.out.println("Visible: " + visibleCount + ", Hidden: " + hiddenCount);
         publications.forEach(p -> System.out.println("ID: " + p.getId() + ", Title: " + p.getTitle() + ", Visible: " + p.isVisible()));
-        
+
         // Fetch comments in a separate query to avoid cartesian product
         if (!publications.isEmpty()) {
             em.createQuery("""
-                        SELECT DISTINCT p
-                        FROM Publication p
-                        LEFT JOIN FETCH p.comments
-                        WHERE p IN :publications
-                    """, Publication.class)
+                                SELECT DISTINCT p
+                                FROM Publication p
+                                LEFT JOIN FETCH p.comments
+                                WHERE p IN :publications
+                            """, Publication.class)
                     .setParameter("publications", publications)
                     .getResultList();
-            
+
             // Initialize authors of comments
             for (Publication p : publications) {
                 for (var comment : p.getComments()) {
@@ -200,17 +204,17 @@ public class PublicationBean {
                 }
             }
         }
-        
+
         return publications;
     }
 
     public Publication findWithTags(long id) {
         Publication p = em.find(Publication.class, id);
-        
+
         if (p == null) {
             return null;
         }
-        
+
         Hibernate.initialize(p.getTags());
         Hibernate.initialize(p.getComments());
         return p;
@@ -219,14 +223,14 @@ public class PublicationBean {
 
     public Publication findWithComments(long id) {
         Publication p = em.find(Publication.class, id);
-        
+
         if (p == null) {
             return null;
         }
 
         Hibernate.initialize(p.getComments());
         Hibernate.initialize(p.getTags());
-        
+
         // Inicializar subscribers de cada tag para notificações
         if (p.getTags() != null) {
             p.getTags().forEach(tag -> Hibernate.initialize(tag.getSubscribers()));
@@ -265,18 +269,18 @@ public class PublicationBean {
         List<Publication> publications = em.createNamedQuery("getMyPostsWithTags", Publication.class)
                 .setParameter("ids", ids)
                 .getResultList();
-        
+
         // Fetch comments in a separate query to avoid cartesian product
         if (!publications.isEmpty()) {
             em.createQuery("""
-                        SELECT DISTINCT p
-                        FROM Publication p
-                        LEFT JOIN FETCH p.comments
-                        WHERE p IN :publications
-                    """, Publication.class)
+                                SELECT DISTINCT p
+                                FROM Publication p
+                                LEFT JOIN FETCH p.comments
+                                WHERE p IN :publications
+                            """, Publication.class)
                     .setParameter("publications", publications)
                     .getResultList();
-            
+
             // Initialize authors of comments
             for (Publication p : publications) {
                 for (var comment : p.getComments()) {
@@ -360,7 +364,7 @@ public class PublicationBean {
                             """, Publication.class)
                     .setParameter("publications", publications)
                     .getResultList();
-            
+
             // Initialize authors of comments
             for (Publication p : publications) {
                 for (var comment : p.getComments()) {
@@ -421,23 +425,23 @@ public class PublicationBean {
         if (publication == null) {
             throw new MyEntityNotFoundException("Publicação com id " + postId + " não encontrada");
         }
-        
+
         boolean oldVisible = publication.isVisible();
         System.out.println("=== updateVisibility DEBUG ===");
         System.out.println("Publication ID: " + postId + ", Title: " + publication.getTitle());
         System.out.println("Old visibility: " + oldVisible + " -> New visibility: " + visible);
-        
+
         publication.setVisible(visible);
         publication.setUpdatedAt(new Timestamp(new Date().getTime()));
         em.flush(); // Force immediate persistence
-        
+
         System.out.println("After setVisible - publication.isVisible(): " + publication.isVisible());
-        
+
         // Registar no histórico se houve mudança
         if (oldVisible != visible) {
             User author = publication.getAuthor();
             recordEdit(publication, author, java.util.Map.of(
-                "is_visible", java.util.Map.of("old", oldVisible, "new", visible)
+                    "is_visible", java.util.Map.of("old", oldVisible, "new", visible)
             ));
             
             // Registar no histórico de atividades do utilizador
@@ -482,73 +486,75 @@ public class PublicationBean {
     }
 
     // EP09 - Pesquisar publicações
-    public List<Publication> searchPublications(String title, Long authorId, String scientificArea,
-                                                List<Long> tagIds, String dateFrom, String dateTo) {
-        StringBuilder jpql = new StringBuilder(
-                "SELECT DISTINCT p FROM Publication p LEFT JOIN p.tags t WHERE p.isVisible = true");
+    public List<Publication> searchPublications(SearchPublicationDTO dto) {
 
-        List<String> conditions = new ArrayList<>();
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Publication> cq = cb.createQuery(Publication.class);
+        Root<Publication> publication = cq.from(Publication.class);
 
-        if (title != null && !title.isBlank()) {
-            conditions.add("LOWER(p.title) LIKE LOWER(:title)");
-        }
-        if (authorId != null) {
-            conditions.add("p.author.id = :authorId");
-        }
-        if (scientificArea != null && !scientificArea.isBlank()) {
-            conditions.add("LOWER(p.scientificArea) LIKE LOWER(:scientificArea)");
-        }
-        if (tagIds != null && !tagIds.isEmpty()) {
-            conditions.add("t.id IN :tagIds");
-        }
-        if (dateFrom != null && !dateFrom.isBlank()) {
-            conditions.add("p.createdAt >= :dateFrom");
-        }
-        if (dateTo != null && !dateTo.isBlank()) {
-            conditions.add("p.createdAt <= :dateTo");
+        List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+        // isVisible = true
+        predicates.add(cb.isTrue(publication.get("isVisible")));
+
+        // Title search
+        if (dto.getTitle() != null && !dto.getTitle().isBlank()) {
+            predicates.add(cb.like(
+                cb.lower(publication.get("title")), 
+                "%" + dto.getTitle().toLowerCase() + "%"
+            ));
         }
 
-        for (String condition : conditions) {
-            jpql.append(" AND ").append(condition);
+        // Author ID search
+        if (dto.getAuthorId() != null) {
+            predicates.add(cb.equal(publication.get("author").get("id"), dto.getAuthorId()));
         }
 
-        jpql.append(" ORDER BY p.createdAt DESC");
-
-        var query = em.createQuery(jpql.toString(), Publication.class);
-
-        if (title != null && !title.isBlank()) {
-            query.setParameter("title", "%" + title + "%");
-        }
-        if (authorId != null) {
-            query.setParameter("authorId", authorId);
-        }
-        if (scientificArea != null && !scientificArea.isBlank()) {
-            query.setParameter("scientificArea", "%" + scientificArea + "%");
-        }
-        if (tagIds != null && !tagIds.isEmpty()) {
-            query.setParameter("tagIds", tagIds);
-        }
-        if (dateFrom != null && !dateFrom.isBlank()) {
-            LocalDate from = LocalDate.parse(dateFrom);
-            Timestamp fromTs = Timestamp.valueOf(from.atStartOfDay());
-            query.setParameter("dateFrom", fromTs);
-        }
-        if (dateTo != null && !dateTo.isBlank()) {
-            LocalDate to = LocalDate.parse(dateTo);
-            Timestamp toTs = Timestamp.valueOf(to.plusDays(1).atStartOfDay());
-            query.setParameter("dateTo", toTs);
+        // Scientific area search
+        if (dto.getScientificArea() != null && !dto.getScientificArea().isBlank()) {
+            predicates.add(cb.like(
+                cb.lower(publication.get("scientificArea")), 
+                "%" + dto.getScientificArea().toLowerCase() + "%"
+            ));
         }
 
-        List<Publication> results = query.getResultList();
-
-        // Inicializar tags e comentários manualmente para evitar LazyInitializationException
-        for (Publication p : results) {
-            p.getTags().size(); // Força o carregamento da coleção de tags
-            p.getComments().size(); // Força o carregamento da coleção de comentários
+        // Date from
+        if (dto.getDateFrom() != null && !dto.getDateFrom().isBlank()) {
+            Timestamp fromTs = Timestamp.valueOf(LocalDate.parse(dto.getDateFrom()).atStartOfDay());
+            predicates.add(cb.greaterThanOrEqualTo(publication.get("createdAt"), fromTs));
         }
 
-        return results;
+        // Date to
+        if (dto.getDateTo() != null && !dto.getDateTo().isBlank()) {
+            Timestamp toTs = Timestamp.valueOf(LocalDate.parse(dto.getDateTo()).plusDays(1).atStartOfDay());
+            predicates.add(cb.lessThan(publication.get("createdAt"), toTs));
+        }
+
+        cq.where(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+        cq.orderBy(cb.desc(publication.get("createdAt")));
+
+        TypedQuery<Publication> query = em.createQuery(cq);
+        List<Publication> allResults = query.getResultList();
+
+        allResults.forEach(p -> {
+            p.getTags().size();
+            p.getComments().size();
+        });
+
+        // 👉 paginação MANUAL
+        int safePage = Math.max(dto.getPage(), 1);
+        int safeLimit = Math.max(1, Math.min(dto.getLimit(), 100));
+
+        int fromIndex = (safePage - 1) * safeLimit;
+        if (fromIndex >= allResults.size()) {
+            return List.of();
+        }
+
+        int toIndex = Math.min(fromIndex + safeLimit, allResults.size());
+
+        return allResults.subList(fromIndex, toIndex);
     }
+
 
 
     private void recordEdit(Publication publication, User editor, Map<String, Object> changes) {
@@ -609,85 +615,85 @@ public class PublicationBean {
     public List<Publication> getHiddenPublications(int page, int limit, String search, String sortBy, String order) {
         String orderDir = order != null && order.equalsIgnoreCase("asc") ? "ASC" : "DESC";
         String sortField = sortBy != null && sortBy.equals("title") ? "p.title" : "p.updatedAt";
-        
+
         String jpql = "SELECT DISTINCT p FROM Publication p LEFT JOIN FETCH p.tags WHERE p.isVisible = false";
-        
+
         if (search != null && !search.isBlank()) {
             jpql += " AND (LOWER(p.title) LIKE LOWER(:search) OR LOWER(p.scientificArea) LIKE LOWER(:search) OR LOWER(p.author.name) LIKE LOWER(:search))";
         }
-        
+
         jpql += " ORDER BY " + sortField + " " + orderDir;
-        
+
         var query = em.createQuery(jpql, Publication.class);
-        
+
         if (search != null && !search.isBlank()) {
             query.setParameter("search", "%" + search + "%");
         }
-        
+
         List<Publication> publications = query.setFirstResult((page - 1) * limit)
-                    .setMaxResults(limit)
-                    .getResultList();
-        
+                .setMaxResults(limit)
+                .getResultList();
+
         // Initialize comments to avoid LazyInitializationException
         publications.forEach(p -> Hibernate.initialize(p.getComments()));
-        
+
         return publications;
     }
 
     public long countHiddenPublications(String search) {
         String jpql = "SELECT COUNT(DISTINCT p) FROM Publication p WHERE p.isVisible = false";
-        
+
         if (search != null && !search.isBlank()) {
             jpql += " AND (LOWER(p.title) LIKE LOWER(:search) OR LOWER(p.scientificArea) LIKE LOWER(:search) OR LOWER(p.author.name) LIKE LOWER(:search))";
         }
-        
+
         var query = em.createQuery(jpql, Long.class);
-        
+
         if (search != null && !search.isBlank()) {
             query.setParameter("search", "%" + search + "%");
         }
-        
+
         return query.getSingleResult();
     }
 
     private void notifySubscribers(Publication publication, Map<String, Object> changes) {
         System.out.println("🔔 Iniciando notificação de subscribers para publicação: " + publication.getTitle());
-        
+
         // Inicializar tags para evitar LazyInitializationException
         Hibernate.initialize(publication.getTags());
-        
+
         System.out.println("📌 Publicação tem " + publication.getTags().size() + " tags");
-        
+
         // Coletar todos os subscribers únicos de todas as tags da publicação
         java.util.Set<User> subscribers = new java.util.HashSet<>();
-        
+
         publication.getTags().forEach(tag -> {
             System.out.println("📌 Processando tag: " + tag.getName());
             Hibernate.initialize(tag.getSubscribers());
             System.out.println("📌 Tag tem " + tag.getSubscribers().size() + " subscribers");
             subscribers.addAll(tag.getSubscribers());
         });
-        
+
         System.out.println("📧 Total de subscribers únicos: " + subscribers.size());
-        
+
         // Remover o autor da lista de subscribers (não notificar a si mesmo)
         subscribers.remove(publication.getAuthor());
-        
+
         System.out.println("📧 Subscribers após remover autor: " + subscribers.size());
-        
+
         if (subscribers.isEmpty()) {
             System.out.println("⚠️ Nenhum subscriber para notificar");
             return;
         }
-        
+
         // Construir mensagem com as alterações
         StringBuilder changesText = new StringBuilder();
         changes.forEach((field, change) -> {
             Map<String, Object> changeMap = (Map<String, Object>) change;
-            changesText.append(String.format("- %s: \"%s\" → \"%s\"\n", 
-                field, changeMap.get("old"), changeMap.get("new")));
+            changesText.append(String.format("- %s: \"%s\" → \"%s\"\n",
+                    field, changeMap.get("old"), changeMap.get("new")));
         });
-        
+
         // Enviar email para cada subscriber
         String subject = "Publicação Atualizada: " + publication.getTitle();
         String publicationUrl = "http://localhost:3000/publications/" + publication.getId();
@@ -703,7 +709,7 @@ public class PublicationBean {
             changesText.toString(),
             publicationUrl
         );
-        
+
         subscribers.forEach(subscriber -> {
             try {
                 System.out.println("📧 Enviar email para: " + subscriber.getEmail());
@@ -806,17 +812,17 @@ public class PublicationBean {
         }
 
         publication = em.merge(publication);
-        
+
         // Inicializar collections lazy para evitar LazyInitializationException
         Hibernate.initialize(publication.getComments());
         Hibernate.initialize(publication.getTags());
         Hibernate.initialize(publication.getRatings());
-        
+
         // Notificar subscribers se houver alterações
         if (!changes.isEmpty()) {
             notifySubscribers(publication, changes);
         }
-        
+
         return publication;
     }
 
@@ -825,8 +831,7 @@ public class PublicationBean {
 
         Publication publication = em.find(Publication.class, publicationId);
 
-        System.out.println(publicationId);
-        System.out.println("aqui");
+
         if (publication == null) {
             throw new WebApplicationException("Publication not found", Response.Status.NOT_FOUND);
         }

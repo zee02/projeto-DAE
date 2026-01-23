@@ -53,7 +53,36 @@ import java.util.List;
                             AND (:isVisible IS NULL OR p.isVisible = :isVisible)
                             AND (:tagId IS NULL OR t.id = :tagId)
                         """
+        ),
+        @NamedQuery(
+                name = "Publication.search.noTags",
+                query = """
+                            SELECT p FROM Publication p
+                            WHERE p.isVisible = true
+                              AND (:title IS NULL OR LOWER(p.title) LIKE LOWER(:title))
+                              AND (:authorId IS NULL OR p.author.id = :authorId)
+                              AND (:scientificArea IS NULL OR LOWER(p.scientificArea) LIKE LOWER(:scientificArea))
+                              AND (:dateFrom IS NULL OR p.createdAt >= :dateFrom)
+                              AND (:dateTo IS NULL OR p.createdAt < :dateTo)
+                            ORDER BY p.createdAt DESC
+                        """
+        ),
+        @NamedQuery(
+                name = "Publication.search.withTags",
+                query = """
+                            SELECT DISTINCT p FROM Publication p
+                            JOIN p.tags t
+                            WHERE p.isVisible = true
+                              AND (:title IS NULL OR LOWER(p.title) LIKE LOWER(:title))
+                              AND (:authorId IS NULL OR p.author.id = :authorId)
+                              AND (:scientificArea IS NULL OR LOWER(p.scientificArea) LIKE LOWER(:scientificArea))
+                              AND t.id IN :tagIds
+                              AND (:dateFrom IS NULL OR p.createdAt >= :dateFrom)
+                              AND (:dateTo IS NULL OR p.createdAt < :dateTo)
+                            ORDER BY p.createdAt DESC
+                        """
         )
+
 })
 public class Publication implements Serializable {
     @Id
