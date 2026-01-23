@@ -57,6 +57,9 @@ public class PublicationBean {
     @EJB
     private EmailBean emailBean;
 
+    @EJB
+    private OpenAISummaryBean openAISummaryBean;
+
     private static final String UPLOAD_DIR = "/app/uploads";
 
     private final Jsonb jsonb = JsonbBuilder.create();
@@ -116,9 +119,16 @@ public class PublicationBean {
         Files.createDirectories(path.getParent());
         Files.copy(fileData, path, StandardCopyOption.REPLACE_EXISTING);
 
-        // Summary automático
+        // Summary automático - gera SÍNCRONO se for PDF e não tiver resumo
         if (summary == null || summary.isBlank()) {
-            summary = "Resumo pendente de geração automática.";
+            if (fileName.toLowerCase().endsWith(".pdf")) {
+                System.out.println("🤖 Gerando resumo SÍNCRONO com OpenAI para: " + fileName);
+                File pdfFile = path.toFile();
+                summary = openAISummaryBean.generateSummaryFromPDF(pdfFile);
+                System.out.println("✅ Resumo gerado com sucesso!");
+            } else {
+                summary = "Resumo não disponível (ficheiro não é PDF).";
+            }
         }
 
         Publication publication = new Publication(title, area, true, summary, fileName, uniqueFileName, author);
@@ -128,6 +138,7 @@ public class PublicationBean {
 
         // Registrar criação no histórico
         em.flush(); // Garantir que a publicação tem ID
+
         recordEdit(publication, author, Map.of(
                 "created", "true",
                 "action", "upload",
@@ -745,6 +756,8 @@ public class PublicationBean {
 
         User editor = userBean.find(user_id.toString());
         Map<String, Object> changes = new java.util.HashMap<>();
+        boolean shouldRegenerateSummary = false;
+        String newUniqueFileName = null;
 
         // Atualizar título
         if (formParts.containsKey("title")) {
@@ -766,7 +779,7 @@ public class PublicationBean {
             publication.setScientificArea(area);
         }
 
-        // Atualizar resumo
+        // Atualizar resumo (apenas se fornecido explicitamente)
         if (formParts.containsKey("summary")) {
             String summary = readUtf8(formParts.get("summary").get(0));
             if (summary != null && !summary.isBlank()) {
@@ -807,6 +820,15 @@ public class PublicationBean {
             if (!fileName.equals(oldFileName)) {
                 changes.put("file", Map.of("old", oldFileName != null ? oldFileName : "", "new", fileName));
             }
+
+            // 🤖 Se o novo ficheiro é PDF e não foi fornecido resumo manual, gerar SÍNCRONO
+            if (fileName.toLowerCase().endsWith(".pdf") && !formParts.containsKey("summary")) {
+                System.out.println("🤖 Gerando resumo SÍNCRONO com OpenAI após edição para: " + fileName);
+                File pdfFile = path.toFile();
+                String generatedSummary = openAISummaryBean.generateSummaryFromPDF(pdfFile);
+                publication.setSummary(generatedSummary);
+                System.out.println("✅ Resumo gerado com sucesso após edição!");
+            }
         }
 
         // Update timestamp
@@ -818,6 +840,7 @@ public class PublicationBean {
         }
 
         publication = em.merge(publication);
+        em.flush();
 
         // Inicializar collections lazy para evitar LazyInitializationException
         Hibernate.initialize(publication.getComments());
