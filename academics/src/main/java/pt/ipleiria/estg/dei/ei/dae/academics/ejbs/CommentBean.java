@@ -72,20 +72,6 @@ public class CommentBean {
         em.merge(publication);
         em.flush();
 
-        // Registrar no histórico
-        try {
-            String truncatedComment = comment.length() > 150 
-                ? comment.substring(0, 150) + "..." 
-                : comment;
-            publicationBean.seedHistory(
-                publication.getId(),
-                user.getEmail(),
-                java.util.Map.of("comment", "Comentário de " + user.getName() + ": " + truncatedComment)
-            );
-        } catch (Exception e) {
-            // Não falhar se histórico não for gravado
-        }
-
         // Notificar subscritores das tags da publicação
         notifyTagSubscribers(publication, user, comment);
 
@@ -122,7 +108,7 @@ public class CommentBean {
     }
 
     //EP19 - Ocultar ou mostrar comentários de uma publicação
-    public Date updateAllVisibilityByPublication(long postId, boolean visible) throws MyEntityNotFoundException {
+    public Date updateAllVisibilityByPublication(long postId, boolean visible, String userId) throws MyEntityNotFoundException {
         Publication publication = publicationBean.findWithComments(postId);
 
         if (publication == null) {
@@ -137,16 +123,17 @@ public class CommentBean {
                 .setParameter("postId", postId)
                 .executeUpdate();
 
-        // Registrar no histórico
-        try {
-            publicationBean.seedHistory(
-                postId,
-                "system", // Usar email de sistema ou do usuário logado se disponível
-                java.util.Map.of("commentVisibility", 
-                    visible ? "Todos os comentários tornados visíveis" : "Todos os comentários ocultados")
-            );
-        } catch (Exception e) {
-            // Não falhar se histórico não for gravado
+        // Registar no histórico de atividades do utilizador
+        if (userId != null) {
+            User user = userBean.find(userId);
+            if (user != null) {
+                String activityType = visible ? "SHOW_ALL_COMMENTS" : "HIDE_ALL_COMMENTS";
+                String description = visible 
+                    ? "Tornou visíveis todos os comentários" 
+                    : "Ocultou todos os comentários";
+                String details = "Publicação: " + publication.getTitle() + ", ID: " + postId;
+                userBean.logActivity(user, activityType, description, details);
+            }
         }
 
         return updatedAt;
@@ -157,7 +144,7 @@ public class CommentBean {
     }
 
     //EP19 - Ocultar ou mostrar um comentário específico
-    public Comment updateVisibility(long postId, long commentId, boolean visible) throws MyEntityNotFoundException {
+    public Comment updateVisibility(long postId, long commentId, boolean visible, String userId) throws MyEntityNotFoundException {
         Comment comment = find(commentId);
 
         if (comment == null) {
@@ -168,20 +155,22 @@ public class CommentBean {
             throw new MyEntityNotFoundException("Comentário com id " + commentId + " não pertence à publicação com id " + postId);
         }
 
+        boolean oldVisible = comment.isVisible();
         comment.setVisible(visible);
         comment.setUpdatedAt(new Date());
 
-        // Registrar no histórico
-        try {
-            publicationBean.seedHistory(
-                postId,
-                comment.getAuthor().getEmail(),
-                java.util.Map.of("commentVisibility", 
-                    visible ? "Comentário de " + comment.getAuthor().getName() + " tornado visível" 
-                            : "Comentário de " + comment.getAuthor().getName() + " ocultado")
-            );
-        } catch (Exception e) {
-            // Não falhar se histórico não for gravado
+        // Registar no histórico de atividades do utilizador se houve mudança
+        if (oldVisible != visible && userId != null) {
+            User user = userBean.find(userId);
+            if (user != null) {
+                String activityType = visible ? "SHOW_COMMENT" : "HIDE_COMMENT";
+                String description = visible 
+                    ? "Tornou visível o comentário de " + comment.getAuthor().getName() 
+                    : "Ocultou o comentário de " + comment.getAuthor().getName();
+                String details = "Publicação: " + comment.getPublication().getTitle() + 
+                                ", Comentário ID: " + commentId;
+                userBean.logActivity(user, activityType, description, details);
+            }
         }
 
         return comment;

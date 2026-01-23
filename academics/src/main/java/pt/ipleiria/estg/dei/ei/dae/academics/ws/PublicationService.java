@@ -264,7 +264,8 @@ public class PublicationService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateCommentsVisibility(@PathParam("post_id") long post_id, @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
-        Date updatedAt = commentBean.updateAllVisibilityByPublication(post_id, dto.getVisible());
+        String userId = securityContext.getUserPrincipal().getName();
+        Date updatedAt = commentBean.updateAllVisibilityByPublication(post_id, dto.getVisible(), userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Visibilidade dos comentários atualizada com sucesso");
@@ -286,7 +287,8 @@ public class PublicationService {
             @PathParam("post_id") long post_id,
             @PathParam("comment_id") long comment_id,
             @Valid VisibilityDTO dto) throws MyEntityNotFoundException {
-        Comment comment = commentBean.updateVisibility(post_id, comment_id, dto.getVisible());
+        String userId = securityContext.getUserPrincipal().getName();
+        Comment comment = commentBean.updateVisibility(post_id, comment_id, dto.getVisible(), userId);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Visibilidade do comentário atualizada com sucesso");
@@ -324,7 +326,7 @@ public class PublicationService {
                     .build();
         }
         
-        publication = publicationBean.updateVisibility(post_id, dto.getVisible());
+        publication = publicationBean.updateVisibility(post_id, dto.getVisible(), userEmail);
 
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Visibilidade da publicação atualizada com sucesso");
